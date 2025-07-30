@@ -8,7 +8,7 @@ Technologie:
 - UI (Pizzaofen Infos)
 - Minikube/K8s/K3s etc.
 - Prometheus (Dashboard)
-- Ansible
+- Ansible (Provisioning und Setup)
 - Grafana (Dashboard für Metriken)
 - Helm (Kubernetes Deployment)
  
