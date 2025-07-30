@@ -11,5 +11,12 @@ Technologie:
 - Ansible (Provisioning und Setup)
 - Grafana (Dashboard für Metriken)
 - Helm (Kubernetes Deployment)
- 
-- optional: Jaeger (Tracing)
+- Jaeger (Tracing)
+
+
+## Getting started
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+
+minikube start
+kubectl get po -A (to verify that everything is running)
