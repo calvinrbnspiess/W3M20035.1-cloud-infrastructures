@@ -6,6 +6,7 @@ HTTPS Port: 7023
 - A capacity of 2
 
 ### Endpoints:
+Swagger documentation: https://localhost:7023/swagger/index.html
 
 /status  
 Returns the oven ID, capacity, current load and the pizza status for every pizza.
