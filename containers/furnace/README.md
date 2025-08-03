@@ -1,5 +1,5 @@
-﻿HTTP Port: 5097  
-HTTPS Port: 7023
+Internal ﻿HTTP Port: 5097  
+Internal HTTPS Port: 7023
 
 ### An oven gets the following upon creation:  
 - A Guid
@@ -25,5 +25,7 @@ docker stop pizzaofen
 docker rm pizzaofen
 
 Test running container:  
+The docker run command from above redirects the exposed port 80 to 8080 on your local machine.  
+
 curl http://localhost:8080/pizzaoven/status  
 Swagger: http://localhost:8080/swagger/index.html
