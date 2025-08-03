@@ -1,0 +1,48 @@
+﻿## Build results
+bin/
+obj/
+out/
+
+## User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+## Rider / VS Code / Visual Studio
+.idea/
+.vscode/
+.vs/
+
+## Auto-generated files
+Generated_Code/
+*.g.*
+*.g.i.cs
+
+## DotNet CLI
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ASP.NET
+appsettings.*.json
+wwwroot/
+appsettings.Development.json
+
+## Logs
+*.log
+logs/
+log/
+*.tlog
+
+## Dependency caches
+packages/
+.nuget/
+
+## Others
+*.DS_Store
+Thumbs.db
+.env
+.env.*
+*.db
+*.sqlite
