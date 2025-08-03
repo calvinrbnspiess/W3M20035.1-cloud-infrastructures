@@ -1,6 +1,0 @@
-@furnace_HostAddress = http://localhost:5097
-
-GET {{furnace_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
