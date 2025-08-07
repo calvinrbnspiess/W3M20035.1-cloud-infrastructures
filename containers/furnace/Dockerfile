@@ -12,10 +12,12 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
+ENV ASPNETCORE_ENVIRONMENT=Production
+
 COPY --from=build /app/out .
 
-# Expose HTTP port (standard 80)
-EXPOSE 80
+# Expose HTTP port 8080
+EXPOSE 8080
 
 # Start the app
 ENTRYPOINT ["dotnet", "furnace.dll"]

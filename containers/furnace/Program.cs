@@ -11,12 +11,14 @@ builder.Services.AddSingleton<PizzaOvenService>();
 
 var app = builder.Build();
 
-app.Urls.Add("http://0.0.0.0:80");
+if (app.Environment.IsProduction())
+{
+    app.Urls.Add("http://0.0.0.0:8080");
+}
 
 // Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
