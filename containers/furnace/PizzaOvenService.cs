@@ -13,8 +13,8 @@ public class PizzaOvenService
     
     public PizzaOvenService()
     {
-        Capacity = 2;
-        _semaphore = new SemaphoreSlim(2, 2);
+        Capacity = 3;
+        _semaphore = new SemaphoreSlim(3, 3);
         Id = Guid.NewGuid();
     }
     
