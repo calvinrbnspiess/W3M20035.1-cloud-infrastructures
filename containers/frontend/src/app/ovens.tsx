@@ -1,7 +1,9 @@
 "use client";
 
+import { HocuspocusProvider } from "@hocuspocus/provider";
 import { Flame, Minus, Pizza, Play, Plus, Square, Timer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import * as Y from "yjs";
 
 import Button from "@/components/button";
 
@@ -26,6 +28,27 @@ export default function PizzaOvenControl() {
     ]);
 
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        console.log("Connecting to Hocuspocus server...");
+        // Local Yjs doc
+        const ydoc = new Y.Doc();
+
+        // Connect to the Hocuspocus server
+        const provider = new HocuspocusProvider({
+            url: "ws://localhost:1234",
+            name: "pizza-state", // document name
+            document: ydoc,
+        });
+
+        // Access the shared map
+        const state = ydoc.getMap("state");
+
+        // Example: listen for changes
+        state.observe((event) => {
+            console.log("State changed:", Object.fromEntries(state.entries()));
+        });
+    }, []);
 
     useEffect(() => {
         intervalRef.current = setInterval(() => {
