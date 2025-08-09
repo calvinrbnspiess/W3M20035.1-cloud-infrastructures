@@ -1,0 +1,20 @@
+{
+  "name": "cloud-native-pizza-ovens-backend",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsc -w src/server.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@types/ws": "^8.18.1",
+    "tsc": "^2.0.4",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "y-websocket": "^3.0.0"
+  }
+}
