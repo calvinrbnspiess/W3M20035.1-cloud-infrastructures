@@ -2,10 +2,13 @@ import { Server } from "@hocuspocus/server";
 import * as Y from "yjs";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
+let yDoc = new Y.Doc();
 
 console.log("Starting server...");
 
 setInterval(() => {
+    let ovens = yDoc.getArray("ovens")
+    ovens.push([{ id: "fgfgdfgfd", capacity: 2, currentLoad: 2, pizzas: [] }])
   // fetch running pods
 }, 5 * 1000);
 
@@ -17,16 +20,17 @@ const server = new Server({
   },
 
   async onLoadDocument({ documentName }) {
-    const ydoc = new Y.Doc();
 
     // Create a shared map for the state
-    const state = ydoc.getMap("state");
+    const state = yDoc.getMap("state");
     state.set("pods", []);
     state.set("ovens", [
       { id: "cd8we32ff", capacity: 2, currentLoad: 0, pizzas: [] },
+      { id: "a789dsf7d", capacity: 3, currentLoad: 1, pizzas: [] },
+
     ]);
 
-    return ydoc;
+    return yDoc;
   },
 });
 

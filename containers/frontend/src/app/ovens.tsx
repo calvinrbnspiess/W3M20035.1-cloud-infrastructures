@@ -43,6 +43,13 @@ export default function PizzaOvenControl() {
 
         // Access the shared map
         const state = ydoc.getMap("state");
+        const ovens = ydoc.getArray("ovens")
+
+
+        // Example: listen for changes
+        ovens.observe((event) => {
+            console.log("Ovens changed:", ovens.toArray());
+        });
 
         // Example: listen for changes
         state.observe((event) => {
