@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Pizzaofen-Steuerung",
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body
         className={`antialiased`}
       >
+        <Toaster />
         {children}
       </body>
     </html>

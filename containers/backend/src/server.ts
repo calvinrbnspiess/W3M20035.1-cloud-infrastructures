@@ -4,19 +4,20 @@ import { Oven } from "./types";
 import { generateRandomName } from "./helpers";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
-let yDoc = new Y.Doc();
-
-const state = yDoc.getMap();
-
-state.set("ovens", []);
-state.set<Oven[]>("pods", []);
 
 console.log("Starting server...");
 
-const ovens = state.get("ovens") as Oven[];
+let yDoc = new Y.Doc();
+
+const ovens = yDoc.getArray("ovens") as Y.Array<Oven>;
+const pods = yDoc.getArray("pods");
 
 const createOven = () => {
-  ovens.push({ id: generateRandomName(), capacity: 2, currentLoad: 2, pizzas: [], isRunning: true })
+  let oven = { id: generateRandomName(), capacity: 2, currentLoad: 2, pizzas: [], isRunning: true };
+
+  yDoc.transact(() => ovens.push([oven]));
+
+  return oven;
 }
 
 /* fetch running pods from kubernetes and update ovens */
@@ -33,9 +34,29 @@ const server = new Server({
     console.log("🔮 Client connected.");
   },
 
-  async onLoadDocument({ documentName }) {
+  async onLoadDocument() {
     return yDoc;
   },
+
+  async onStateless({ payload, connection }) {
+    const msg = JSON.parse(payload);
+
+    switch (msg.type) {
+      case "create-oven": {
+        // do your backend work
+        const oven = await createOven();
+
+        // reply to just this client
+        connection.sendStateless(
+          JSON.stringify({ type: "notify", message: `Oven '${oven.id} created!'` })
+        );
+        break;
+      }
+      default:
+        break;
+    }
+  },
+
 
 });
 

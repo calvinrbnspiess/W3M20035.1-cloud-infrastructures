@@ -1,11 +1,12 @@
 "use client";
 
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Flame, Minus, Pizza, Play, Plus, Square, Timer } from "lucide-react";
+import { Flame, Minus, PizzaIcon, Play, Plus, Square, Timer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as Y from "yjs";
+import { toast } from "sonner";
 
-import { type Oven } from "../../../backend/src/types";
+import { type Oven, type Pizza } from "../../../backend/src/types";
 
 import Button from "@/components/button";
 
@@ -81,7 +82,7 @@ function TopActions({ onAddOven, onAddPizzaToAny, isAnyOvenFree }: { onAddOven: 
         Neuen Ofen erstellen
       </Button>
       <Button onClick={onAddPizzaToAny} disabled={!isAnyOvenFree} className="w-fit">
-        <Pizza className="mr-1 h-4 w-4" />
+        <PizzaIcon className="mr-1 h-4 w-4" />
         Pizza in freien Ofen platzieren
       </Button>
     </div>
@@ -203,6 +204,7 @@ function OvenCard({ oven, onStart, onStop, onAddPizza, onRemovePizza }: {
 /** Main Component **/
 export default function PizzaOvenControl() {
     const [ovens, setOvens] = useState<Oven[]>([]);
+    const [provider, setProvider] = useState<HocuspocusProvider>();
 
     useEffect(() => {
         // Local Yjs doc
@@ -213,15 +215,23 @@ export default function PizzaOvenControl() {
           url: "ws://localhost:1234",
           name: "state",
           document: ydoc,
+          onStateless: ({ payload }) => {
+                // you'll generally send/receive JSON
+                const msg = JSON.parse(payload);
+                if (msg.type === "notify") {
+                    toast(msg.message);
+                }
+            }
         });
-    
-        const state = ydoc.getMap();
-    
-        state.observe(() => {
-          console.log("State changed:", Object.fromEntries(state.entries()));
 
-          const stateValues = Object.fromEntries(state.entries()) as { ovens: Oven[], pods: [] };
-          setOvens(stateValues.ovens);
+        setProvider(provider);
+    
+        const ovens = ydoc.getArray<Oven>("ovens");
+        
+        ovens.observeDeep(() => {
+            setOvens(ovens.toArray());
+          
+            console.log("Ovens changed:", ovens);
         });
     
         return () => {
@@ -254,7 +264,11 @@ export default function PizzaOvenControl() {
       <div className="mx-auto max-w-7xl">
         <PageHeader />
         <SummaryBar ovens={ovens} />
-        <TopActions onAddOven={() => {}} onAddPizzaToAny={() => {}} isAnyOvenFree={isAnyOvenFree} />
+        <TopActions onAddOven={() => {
+            provider?.sendStateless(
+                JSON.stringify({ type: "create-oven" })
+              );
+        }} onAddPizzaToAny={() => {}} isAnyOvenFree={isAnyOvenFree} />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {ovens.map((oven) => (
