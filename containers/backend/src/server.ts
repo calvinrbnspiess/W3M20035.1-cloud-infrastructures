@@ -1,44 +1,42 @@
 import { Server } from "@hocuspocus/server";
 import * as Y from "yjs";
+import { Oven } from "./types";
+import { generateRandomName } from "./helpers";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 let yDoc = new Y.Doc();
 
+const state = yDoc.getMap();
+
+state.set("ovens", []);
+state.set<Oven[]>("pods", []);
+
 console.log("Starting server...");
 
+const ovens = state.get("ovens") as Oven[];
+
+const createOven = () => {
+  ovens.push({ id: generateRandomName(), capacity: 2, currentLoad: 2, pizzas: [], isRunning: true })
+}
+
+/* fetch running pods from kubernetes and update ovens */
 setInterval(() => {
-    let ovens = yDoc.getArray("ovens")
-    ovens.push([{ id: "fgfgdfgfd", capacity: 2, currentLoad: 2, pizzas: [] }])
-  // fetch running pods
-}, 5 * 1000);
+  createOven();
+}, 15 * 1000);
+
+createOven();
 
 const server = new Server({
   port: PORT,
 
   async onConnect() {
-    console.log("🔮");
+    console.log("🔮 Client connected.");
   },
 
   async onLoadDocument({ documentName }) {
-
-    // Create a shared map for the state
-    const state = yDoc.getMap("state");
-    state.set("pods", []);
-    state.set("ovens", [
-      { id: "cd8we32ff", capacity: 2, currentLoad: 0, pizzas: [] },
-      { id: "a789dsf7d", capacity: 3, currentLoad: 1, pizzas: [] },
-
-    ]);
-
     return yDoc;
   },
+
 });
 
 server.listen();
-
-// start web socket server at port XXXX
-
-// provide
-// - ws endpoint to put a new pizza in any available oven
-
-// push changes of ovens to frontend, provide information about how long pizza is in the oven
