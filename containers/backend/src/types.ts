@@ -2,11 +2,12 @@ export type Oven = {
     id: string;
     capacity: number;
     currentLoad: number;
-    pizzas: Pizza[];
+    pizzas: PizzaStatus[];
     isRunning: boolean;
 }
 
-export type Pizza = {
+export type PizzaStatus = {
     id: string;
-    timeRemaining: number
+    description: string;
+    secondsLeft: number
 }
