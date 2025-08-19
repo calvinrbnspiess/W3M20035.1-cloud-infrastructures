@@ -2,7 +2,7 @@ import { Server } from "@hocuspocus/server";
 import * as Y from "yjs";
 import { Oven } from "./types";
 import { v4 as uuidv4 } from 'uuid';
-import k8s from "@kubernetes/client-node";
+import * as k8s from '@kubernetes/client-node';
 import fetch from "node-fetch"; //TODO: benutzen um pod api aufzurufen
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
