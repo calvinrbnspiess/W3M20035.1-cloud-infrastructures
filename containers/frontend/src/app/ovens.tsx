@@ -94,7 +94,7 @@ function OvenHeader({ oven }: { oven: Oven }) {
     <div className="p-6 pb-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Flame className={`h-5 w-5 ${oven.isRunning ? "text-orange-500" : "text-gray-400"}`} />
+          <Flame className={`h-5 w-5 shrink-0 ${oven.isRunning ? "text-orange-500" : "text-gray-400"}`} />
           <h3 className="text-lg font-semibold">{oven.id}</h3>
         </div>
         <span
@@ -204,40 +204,36 @@ function OvenCard({ oven, onStart, onStop, onAddPizza, onRemovePizza }: {
 /** Main Component **/
 export default function PizzaOvenControl() {
     const [ovens, setOvens] = useState<Oven[]>([]);
-    const [provider, setProvider] = useState<HocuspocusProvider>();
 
     useEffect(() => {
-        // Local Yjs doc
-        const ydoc = new Y.Doc();
-    
-        // Connect to the Hocuspocus server
-        const provider = new HocuspocusProvider({
-          url: "ws://localhost:1234",
-          name: "state",
-          document: ydoc,
-          onStateless: ({ payload }) => {
-                // you'll generally send/receive JSON
-                const msg = JSON.parse(payload);
-                if (msg.type === "notify") {
-                    toast(msg.message);
-                }
-            }
-        });
+        const ws = new WebSocket("ws://localhost:1234");
 
-        setProvider(provider);
-    
-        const ovens = ydoc.getArray<Oven>("ovens");
-        
-        ovens.observeDeep(() => {
-            setOvens(ovens.toArray());
-          
-            console.log("Ovens changed:", ovens);
+        ws.addEventListener('message', (event) => {
+          try {
+            const { type, ...otherData } = JSON.parse(event.data);
+
+            switch(type) {
+              case "update":
+                console.log("Received update");
+                const state = JSON.parse(otherData.state);
+
+                console.log(state)
+                setOvens(state.ovens || []);
+                break;
+              default:
+                console.log("Received unknown message type", type);
+            }
+                
+
+          } catch(error) {
+            console.log("Could not parse message: ", error);
+          }
         });
     
         return () => {
-          provider.destroy();
-          ydoc.destroy();
-        };
+          console.log("Disconnecting");
+          ws.close();
+        }
       }, [setOvens]);
 
   // Tick every second to update running ovens
@@ -260,14 +256,14 @@ export default function PizzaOvenControl() {
   const isAnyOvenFree = useMemo(() => ovens.some((o) => o.pizzas.length < 3), [ovens]);
 
   return (
-    <div className="min-h-screen select-none bg-slate-50 p-6">
+    <div className="min-h-screen select-none    bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
         <PageHeader />
         <SummaryBar ovens={ovens} />
         <TopActions onAddOven={() => {
-            provider?.sendStateless(
-                JSON.stringify({ type: "create-oven" })
-              );
+            // provider?.sendStateless(
+            //     JSON.stringify({ type: "create-oven" })
+            //   );
         }} onAddPizzaToAny={() => {}} isAnyOvenFree={isAnyOvenFree} />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

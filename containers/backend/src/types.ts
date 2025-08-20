@@ -11,3 +11,15 @@ export type PizzaStatus = {
     description: string;
     secondsLeft: number
 }
+
+export type State = {
+    metrics: {
+        pods: []
+    },
+    ovens: Oven[],
+    pizzas: PizzaStatus[]
+}
+
+export enum MessageType {
+    UPDATE = "update"
+}
