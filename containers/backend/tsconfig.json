@@ -5,11 +5,14 @@
     "lib": ["ES2019"],
     "types": ["node"], 
     "outDir": "dist",
-    "rootDir": "src",
     "moduleResolution": "Node",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@frontend/*": ["../frontend/src/*"]
+    }
   },
-  "include": ["src", "src/types/**/*.d.ts"]
+  "include": ["src", "src/types/**/*.d.ts", "../frontend/src/types.ts"]
 }

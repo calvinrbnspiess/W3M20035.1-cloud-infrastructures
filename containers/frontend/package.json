@@ -2,6 +2,7 @@
     "name": "cloud-native-pizza-ovens",
     "version": "0.1.0",
     "private": true,
+    "workspaces": ["next-js-directory"],
     "scripts": {
         "dev": "next dev --turbopack",
         "build": "next build",

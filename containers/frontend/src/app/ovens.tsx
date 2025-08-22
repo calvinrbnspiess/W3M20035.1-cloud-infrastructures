@@ -1,12 +1,10 @@
 "use client";
 
-import { HocuspocusProvider } from "@hocuspocus/provider";
 import { Flame, Minus, PizzaIcon, Play, Plus, Square, Timer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import * as Y from "yjs";
 import { toast } from "sonner";
 
-import { type Oven, type Pizza } from "../../../backend/src/types";
+import { MessageType, type Oven, type Pizza } from "@/types";
 
 import Button from "@/components/button";
 
@@ -62,7 +60,7 @@ function SummaryBar({ ovens }: { ovens: Oven[] }) {
   const running = useMemo(() => ovens.filter((o) => o.isRunning).length, [ovens]);
   const totalPizzas = useMemo(() => ovens.reduce((t, o) => t + o.pizzas.length, 0), [ovens]);
   const finishingSoon = useMemo(
-    () => ovens.reduce((t, o) => t + o.pizzas.filter((p) => p.timeRemaining <= 10).length, 0),
+    () => ovens.reduce((t, o) => t + o.pizzas.filter((p) => p.secondsLeft <= 10).length, 0),
     [ovens]
   );
   return (
@@ -74,16 +72,12 @@ function SummaryBar({ ovens }: { ovens: Oven[] }) {
   );
 }
 
-function TopActions({ onAddOven, onAddPizzaToAny, isAnyOvenFree }: { onAddOven: () => void; onAddPizzaToAny: () => void; isAnyOvenFree: boolean }) {
+function TopActions({ onAddPizza }: { onAddPizza: () => void }) {
   return (
     <div className="mb-8 flex w-fit gap-4 whitespace-nowrap">
-      <Button onClick={onAddOven} className="w-fit">
-        <Play className="mr-1 h-4 w-4" />
-        Neuen Ofen erstellen
-      </Button>
-      <Button onClick={onAddPizzaToAny} disabled={!isAnyOvenFree} className="w-fit">
+      <Button onClick={onAddPizza} className="w-fit">
         <PizzaIcon className="mr-1 h-4 w-4" />
-        Pizza in freien Ofen platzieren
+        Pizza anfordern
       </Button>
     </div>
   );
@@ -125,7 +119,7 @@ function OvenControls({ isRunning, onStart, onStop }: { isRunning: boolean; onSt
 }
 
 function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pizza: Pizza; onRemove: () => void; disableRemove: boolean }) {
-  const isCritical = pizza.timeRemaining <= 60;
+  const isCritical = pizza.secondsLeft <= 60;
   return (
     <div className="flex items-center justify-between rounded border border-gray-200 bg-white p-2">
       <div className="flex items-center gap-2">
@@ -138,7 +132,7 @@ function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pi
             isCritical ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"
           }`}
         >
-          {formatTime(pizza.timeRemaining)}
+          {formatTime(pizza.secondsLeft)}
         </span>
         <Button onClick={onRemove} disabled={disableRemove}>
           <Minus className="h-3 w-3" />
@@ -153,11 +147,6 @@ function PizzaSection({ oven, onAddPizza, onRemovePizza }: { oven: Oven; onAddPi
     <div className="border-t border-t-gray-300 pt-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium">Pizzen ({oven.pizzas.length}/3)</span>
-        <div className="flex gap-1">
-          <Button onClick={onAddPizza} disabled={oven.pizzas.length >= 3}>
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
       </div>
 
       <div className="space-y-2">
@@ -194,7 +183,6 @@ function OvenCard({ oven, onStart, onStop, onAddPizza, onRemovePizza }: {
     >
       <OvenHeader oven={oven} />
       <div className="space-y-4 px-6 pb-6">
-        <OvenControls isRunning={oven.isRunning} onStart={onStart} onStop={onStop} />
         <PizzaSection oven={oven} onAddPizza={onAddPizza} onRemovePizza={onRemovePizza} />
       </div>
     </div>
@@ -204,22 +192,28 @@ function OvenCard({ oven, onStart, onStop, onAddPizza, onRemovePizza }: {
 /** Main Component **/
 export default function PizzaOvenControl() {
     const [ovens, setOvens] = useState<Oven[]>([]);
+    const [websocket, setWebsocket] = useState<WebSocket>();
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:1234");
+
+        setWebsocket(ws);
 
         ws.addEventListener('message', (event) => {
           try {
             const { type, ...otherData } = JSON.parse(event.data);
 
             switch(type) {
-              case "update":
+              case MessageType.UPDATE:
                 console.log("Received update");
                 const state = JSON.parse(otherData.state);
 
                 console.log(state)
                 setOvens(state.ovens || []);
                 break;
+              case MessageType.NOTIFY:
+                const { message } = otherData;
+                toast(message);
               default:
                 console.log("Received unknown message type", type);
             }
@@ -234,37 +228,20 @@ export default function PizzaOvenControl() {
           console.log("Disconnecting");
           ws.close();
         }
-      }, [setOvens]);
-
-  // Tick every second to update running ovens
-  useTick(
-    () => {
-      setOvens((prev) =>
-        prev.map((oven) => ({
-          ...oven,
-          pizzas: oven.isRunning
-            ? oven.pizzas
-                .map((p) => ({ ...p, timeRemaining: Math.max(0, p.timeRemaining - 1) }))
-                .filter((p) => p.timeRemaining > 0)
-            : oven.pizzas,
-        }))
-      );
-    },
-    1000
-  );
-
-  const isAnyOvenFree = useMemo(() => ovens.some((o) => o.pizzas.length < 3), [ovens]);
+      }, [setWebsocket, setOvens]);
 
   return (
     <div className="min-h-screen select-none    bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
         <PageHeader />
         <SummaryBar ovens={ovens} />
-        <TopActions onAddOven={() => {
-            // provider?.sendStateless(
-            //     JSON.stringify({ type: "create-oven" })
-            //   );
-        }} onAddPizzaToAny={() => {}} isAnyOvenFree={isAnyOvenFree} />
+        <TopActions onAddPizza={() => {
+           toast("Pizza wird angefordert ...");
+            websocket?.send(JSON.stringify({
+              type: MessageType.ADD_PIZZA,
+              description: "Salami"
+            }))
+        }} />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {ovens.map((oven) => (

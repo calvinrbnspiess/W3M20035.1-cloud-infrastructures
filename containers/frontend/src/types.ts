@@ -2,11 +2,11 @@ export type Oven = {
     id: string;
     capacity: number;
     currentLoad: number;
-    pizzas: PizzaStatus[];
+    pizzas: Pizza[];
     isRunning: boolean;
 }
 
-export type PizzaStatus = {
+export type Pizza = {
     id: string;
     description: string;
     secondsLeft: number
@@ -17,9 +17,11 @@ export type State = {
         pods: []
     },
     ovens: Oven[],
-    pizzas: PizzaStatus[]
+    pizzas: Pizza[]
 }
 
 export enum MessageType {
-    UPDATE = "update"
+    UPDATE = "update",
+    NOTIFY = "notify",
+    ADD_PIZZA = "add-pizza"
 }

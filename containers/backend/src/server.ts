@@ -1,4 +1,4 @@
-import { MessageType, Oven, State } from "./types";
+import { MessageType, Oven, Pizza, State } from "@frontend/types";
 import { v4 as uuidv4 } from 'uuid';
 import * as k8s from '@kubernetes/client-node';
 import fetch from "node-fetch";
@@ -22,20 +22,7 @@ async function updateOvensFromPods() {
     //TODO: result ans frontend schicken -> alles was furnace endpoint hergibt
 
     // Mock ovens, remove once k8s call works
-    tempUuid = uuidv4();
-    let oven = {
-      id: tempUuid,
-      capacity: 2,
-      currentLoad: 2,
-      pizzas: [],
-      isRunning: true
-    };
-
-    state.ovens.push(oven);
-    
-    clients.forEach(ws => {
-      sendUpdate(ws);
-    })
+    createOven();
 
     console.log("Updated ovens from server-side");
     
@@ -44,8 +31,45 @@ async function updateOvensFromPods() {
   }
 }
 
+async function createOven () {
+  tempUuid = uuidv4();
+  let oven = {
+    id: tempUuid,
+    capacity: 2,
+    currentLoad: 2,
+    pizzas: [],
+    isRunning: true
+  };
+
+  state.ovens.push(oven);
+  
+  sendUpdateToAll();
+}
+
+async function createPizza(description: string, ws: WebSocket) {
+  if(state.ovens.length === 0) {
+    ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `No oven available.` }));
+    return false;
+  }
+
+  // Find the first oven with less than 3 pizzas
+  const availableOven = state.ovens.find(oven => oven.pizzas.length < 3);
+
+  if (!availableOven) {
+    ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `There is no free oven.` }));
+    return false;
+  }
+
+  const pizza: Pizza = { description: description, id: uuidv4(), secondsLeft: 90 };
+
+  availableOven.pizzas.push(pizza);
+  sendUpdateToAll();
+
+  return true;
+}
+
 // Update pods every 5 seconds
-setInterval(updateOvensFromPods, 5 * 1000);
+setInterval(updateOvensFromPods, 15 * 1000);
 
 const clients = new Set<WebSocket>();
 
@@ -63,6 +87,12 @@ const sendUpdate = (ws: WebSocket) => {
   ws.send(JSON.stringify({ type: MessageType.UPDATE, state: payload }));
 }
 
+const sendUpdateToAll = () => {
+  clients.forEach(ws => {
+    sendUpdate(ws);
+  })
+}
+
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on('connection', (ws: WebSocket) => {
@@ -71,12 +101,23 @@ wss.on('connection', (ws: WebSocket) => {
   // Immediately send the full current state
   sendUpdate(ws);
 
-  ws.addEventListener("message", (message) => {
-    console.log("<- received message", message);
-
+  ws.addEventListener("message", async (message) => {
     try {
-      const { type } = JSON.parse(message.data);
-      console.log("type", type);
+      const { type, ...otherData } = JSON.parse(message.data);
+
+      console.log("Received message:", type);
+
+      switch(type) {
+        case MessageType.ADD_PIZZA:
+          console.log("Creating new pizza");
+          const success = await createPizza(otherData.description, ws);
+
+          if(success) {
+            ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `Pizza '${otherData.description ?? 'with unknown description'}' created!` }));
+          }
+        default:
+          console.log("Received unknown message type", type);
+      }
     } catch(error) {
       console.log("Could not parse message: ", error);
     }
