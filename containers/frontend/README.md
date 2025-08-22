@@ -22,11 +22,11 @@ Then run ```npm run start```.
 
 ## Deployment
 
-To deploy this app using Docker, use the following commands:
+To deploy this app using Docker, use the following commands. Run the commands on project root:
 
 1. **Build the Docker image:**
    ```bash
-   docker build --tag frontend-cloud-native-pizza-ovens .
+   docker build -f containers/frontend/Dockerfile --tag frontend-cloud-native-pizza-ovens .
    ```
 
 2. **Run the Docker container:**
