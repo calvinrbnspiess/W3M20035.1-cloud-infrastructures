@@ -1,8 +1,7 @@
-import { MessageType, Oven, Pizza, State } from "@frontend/types";
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import * as k8s from '@kubernetes/client-node';
-import fetch from "node-fetch";
-import { WebSocketServer } from "ws";
+import {WebSocketServer} from "ws";
+import {MessageType, Pizza, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
@@ -14,58 +13,59 @@ kubeConfig.loadFromDefault()
 const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
 
 async function updateOvensFromPods() {
-  try {
-    // TODO: in listNamespacedPod() richtige params mitgeben
-    //const res = await k8sApi.listNamespacedPod();
-    //const pods = res.body.items;
-    //TODO: pod api aufrufen und result mappen
-    //TODO: result ans frontend schicken -> alles was furnace endpoint hergibt
+    try {
+        const res = await k8sApi.listNamespacedPod({ namespace: "default" });
+        const pods = res.items;
+        console.log("Pods:" + pods);
 
-    // Mock ovens, remove once k8s call works
-    createOven();
+        //TODO: pod api aufrufen und result mappen
+        //TODO: result ans frontend schicken -> alles was furnace endpoint hergibt
 
-    console.log("Updated ovens from server-side");
-    
-  } catch (err) {
-    console.error("Error occurred whilst getting pods from k8s:", err);
-  }
+        // Mock ovens, remove once k8s call works
+        await createOvenAsync();
+
+        console.log("Updated ovens from server-side");
+
+    } catch (err) {
+        console.error("Error occurred whilst getting pods from k8s:", err);
+    }
 }
 
-async function createOven () {
-  tempUuid = uuidv4();
-  let oven = {
-    id: tempUuid,
-    capacity: 2,
-    currentLoad: 2,
-    pizzas: [],
-    isRunning: true
-  };
+async function createOvenAsync() {
+    tempUuid = uuidv4();
+    let oven = {
+        id: tempUuid,
+        capacity: 2,
+        currentLoad: 2,
+        pizzas: [],
+        isRunning: true
+    };
 
-  state.ovens.push(oven);
-  
-  sendUpdateToAll();
+    state.ovens.push(oven);
+
+    sendUpdateToAll();
 }
 
 async function createPizza(description: string, ws: WebSocket) {
-  if(state.ovens.length === 0) {
-    ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `No oven available.` }));
-    return false;
-  }
+    if (state.ovens.length === 0) {
+        ws.send(JSON.stringify({type: MessageType.NOTIFY, message: `No oven available.`}));
+        return false;
+    }
 
-  // Find the first oven with less than 3 pizzas
-  const availableOven = state.ovens.find(oven => oven.pizzas.length < 3);
+    // Find the first oven with less than 3 pizzas
+    const availableOven = state.ovens.find(oven => oven.pizzas.length < 3);
 
-  if (!availableOven) {
-    ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `There is no free oven.` }));
-    return false;
-  }
+    if (!availableOven) {
+        ws.send(JSON.stringify({type: MessageType.NOTIFY, message: `There is no free oven.`}));
+        return false;
+    }
 
-  const pizza: Pizza = { description: description, id: uuidv4(), secondsLeft: 90 };
+    const pizza: Pizza = {description: description, id: uuidv4(), secondsLeft: 90};
 
-  availableOven.pizzas.push(pizza);
-  sendUpdateToAll();
+    availableOven.pizzas.push(pizza);
+    sendUpdateToAll();
 
-  return true;
+    return true;
 }
 
 // Update pods every 5 seconds
@@ -74,66 +74,69 @@ setInterval(updateOvensFromPods, 15 * 1000);
 const clients = new Set<WebSocket>();
 
 let state: State = {
-  metrics: {
-    pods: [] // some information about pods (id, cpu/memory)
-    // pizza queue duration length
-  },
-  ovens: [],
-  pizzas: []
+    metrics: {
+        pods: [] // some information about pods (id, cpu/memory)
+        // pizza queue duration length
+    },
+    ovens: [],
+    pizzas: []
 };
 
 const sendUpdate = (ws: WebSocket) => {
-  const payload = JSON.stringify(state);
-  ws.send(JSON.stringify({ type: MessageType.UPDATE, state: payload }));
+    const payload = JSON.stringify(state);
+    ws.send(JSON.stringify({type: MessageType.UPDATE, state: payload}));
 }
 
 const sendUpdateToAll = () => {
-  clients.forEach(ws => {
-    sendUpdate(ws);
-  })
+    clients.forEach(ws => {
+        sendUpdate(ws);
+    })
 }
 
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({port: PORT});
 
 wss.on('connection', (ws: WebSocket) => {
-  clients.add(ws);
+    clients.add(ws);
 
-  // Immediately send the full current state
-  sendUpdate(ws);
+    // Immediately send the full current state
+    sendUpdate(ws);
 
-  ws.addEventListener("message", async (message) => {
-    try {
-      const { type, ...otherData } = JSON.parse(message.data);
+    ws.addEventListener("message", async (message) => {
+        try {
+            const {type, ...otherData} = JSON.parse(message.data);
 
-      console.log("Received message:", type);
+            console.log("Received message:", type);
 
-      switch(type) {
-        case MessageType.ADD_PIZZA:
-          console.log("Creating new pizza");
-          const success = await createPizza(otherData.description, ws);
+            switch (type) {
+                case MessageType.ADD_PIZZA:
+                    console.log("Creating new pizza");
+                    const success = await createPizza(otherData.description, ws);
 
-          if(success) {
-            ws.send(JSON.stringify({ type: MessageType.NOTIFY, message: `Pizza '${otherData.description ?? 'with unknown description'}' created!` }));
-          }
-        default:
-          console.log("Received unknown message type", type);
-      }
-    } catch(error) {
-      console.log("Could not parse message: ", error);
-    }
+                    if (success) {
+                        ws.send(JSON.stringify({
+                            type: MessageType.NOTIFY,
+                            message: `Pizza '${otherData.description ?? 'with unknown description'}' created!`
+                        }));
+                    }
+                default:
+                    console.log("Received unknown message type", type);
+            }
+        } catch (error) {
+            console.log("Could not parse message: ", error);
+        }
 
-  });
+    });
 
-  // Basic keep-alive / cleanup
-  ws.addEventListener('close', () => {
-    console.log(`Client disconnected`);
-    clients.delete(ws)
-  });
+    // Basic keep-alive / cleanup
+    ws.addEventListener('close', () => {
+        console.log(`Client disconnected`);
+        clients.delete(ws)
+    });
 
-  ws.addEventListener('error', (error) => {
-    console.log("Websocket error:", error);
-    clients.delete(ws)
-  });
+    ws.addEventListener('error', (error) => {
+        console.log("Websocket error:", error);
+        clients.delete(ws)
+    });
 });
 
 console.log(`Server listening on port ${PORT}`); 

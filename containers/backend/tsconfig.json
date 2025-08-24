@@ -11,8 +11,6 @@
     "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@frontend/*": ["../frontend/src/*"]
     }
   },
-  "include": ["src", "src/types/**/*.d.ts", "../frontend/src/types.ts"]
 }
