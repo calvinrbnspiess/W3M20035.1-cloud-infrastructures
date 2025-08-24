@@ -7,7 +7,6 @@ const PORT = parseInt(process.env.PORT || "1234", 10);
 
 let tempUuid: string;
 
-// k8s stuff
 const kubeConfig = new k8s.KubeConfig();
 kubeConfig.loadFromDefault()
 const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
@@ -18,10 +17,10 @@ async function updateOvensFromPods() {
         const pods = res.items;
         console.log("Pods:" + pods);
 
-        //TODO: pod api aufrufen und result mappen
-        //TODO: result ans frontend schicken -> alles was furnace endpoint hergibt
+        //TODO: result mappen
+        //TODO: daten ans frontend schicken
 
-        // Mock ovens, remove once k8s call works
+        // TODO: remove once everything else works
         await createOvenAsync();
 
         console.log("Updated ovens from server-side");
