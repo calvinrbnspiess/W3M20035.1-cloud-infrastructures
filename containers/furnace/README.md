@@ -2,7 +2,6 @@
 - A Guid
 - A capacity of 3
 
-
 ### Endpoints
 
 /status  
@@ -12,6 +11,14 @@ Returns the oven ID, capacity, current load and the pizza status for every pizza
 Adds a new pizza to the oven.  
 Takes an optional description of the pizza.
 
+
+### Healthchecks
+
+/health/live
+Returns whether the application is running.
+
+/health/ready
+Return whether the oven/furnace is currently full (CurrentLoad >= Capacity)
 
 ### Test running container
 The docker run command from below redirects the exposed port 8080 to 8080 on your local machine.
