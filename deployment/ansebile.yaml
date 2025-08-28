@@ -8,6 +8,8 @@
   become: false
   vars:
     helm_version: "v3.14.0"
+    kubectl_version_url: "https://dl.k8s.io/release/stable.txt"
+
   tasks:
     - name: Wait for ssh
       ansible.builtin.wait_for_connection:
@@ -22,6 +24,9 @@
   gather_facts: false
   user: ubuntu
   become_user: root  
+  vars:
+    helm_version: "v3.14.0"
+    kubectl_version_url: "https://dl.k8s.io/release/stable.txt"
   tasks:
   - name: Install required packages
     apt:
@@ -55,12 +60,6 @@
         groups: docker
         append: yes
 
-- name: Install Minikube
-  hosts: all
-  gather_facts: false
-  user: ubuntu
-  become: false
-  tasks:
   - name: Download Minikube binary
     get_url:
       url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
@@ -68,16 +67,25 @@
       mode: '0755'
 
   - name: Get latest kubectl version
-    uri:
-      url: https://dl.k8s.io/release/stable.txt
+    ansible.builtin.uri:
+      url: "{{ kubectl_version_url }}"
       return_content: yes
     register: kubectl_version
 
   - name: Download kubectl
-    get_url:
+    ansible.builtin.get_url:
       url: "https://dl.k8s.io/release/{{ kubectl_version.content }}/bin/linux/amd64/kubectl"
       dest: /usr/local/bin/kubectl
       mode: '0755'
+
+
+
+- name: Install Minikube
+  hosts: all
+  gather_facts: false
+  user: ubuntu
+  become: false
+  tasks:
 
   - name: Start Minikube
     become: false
@@ -104,7 +112,11 @@
   become: true
   gather_facts: false
   user: ubuntu
-  become_user: root  
+  become_user: root 
+  vars:
+    helm_version: "v3.14.0"
+    kubectl_version_url: "https://dl.k8s.io/release/stable.txt"
+
   tasks:
 
     - name: Add Helm signing key
