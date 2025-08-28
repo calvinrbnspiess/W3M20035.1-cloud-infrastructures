@@ -13,7 +13,7 @@ const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
 
 async function updateOvensFromPods() {
     try {
-        const res = await k8sApi.listNamespacedPod({ namespace: "default" });
+        const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
         const pods = res.items;
         console.log("Pods:" + pods);
 
