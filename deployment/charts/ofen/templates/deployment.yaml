@@ -45,6 +45,11 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
+          env:
+          {{- range $key, $value := .env }}
+            - name: {{ $key  }}
+              value: {{ tpl $value $ | quote }}
+          {{- end }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
