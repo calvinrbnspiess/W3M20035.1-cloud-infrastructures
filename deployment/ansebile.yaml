@@ -1,0 +1,140 @@
+# Run with: ansible-playbook -i ../terraform-openstack/openstack-inventory.txt deploy.yml
+---
+# Begin: Prerequisites
+- hosts: all
+  name: Prerequisites
+  gather_facts: false
+  user: ubuntu
+  become: false
+  vars:
+    helm_version: "v3.14.0"
+  tasks:
+    - name: Wait for ssh
+      ansible.builtin.wait_for_connection:
+    - name: Wait for cloud-init to finish
+      ansible.builtin.raw: while [ ! -f /var/lib/cloud/instance/boot-finished]; do sleep 10s; done
+      retries: 10
+      delay: 1
+
+- name: Install Docker  on Debian/Ubuntu
+  hosts: all
+  become: true
+  gather_facts: false
+  user: ubuntu
+  become_user: root  
+  tasks:
+  - name: Install required packages
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+      state: present
+      update_cache: true
+
+  - name: Add Docker’s official GPG key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Install Docker
+    apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+      
+  - name: Add current user to Docker group
+    user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+- name: Install Minikube
+  hosts: all
+  gather_facts: false
+  user: ubuntu
+  become: false
+  tasks:
+  - name: Download Minikube binary
+    get_url:
+      url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+      dest: /usr/local/bin/minikube
+      mode: '0755'
+
+  - name: Get latest kubectl version
+    uri:
+      url: https://dl.k8s.io/release/stable.txt
+      return_content: yes
+    register: kubectl_version
+
+  - name: Download kubectl
+    get_url:
+      url: "https://dl.k8s.io/release/{{ kubectl_version.content }}/bin/linux/amd64/kubectl"
+      dest: /usr/local/bin/kubectl
+      mode: '0755'
+
+  - name: Start Minikube
+    become: false
+    shell: |
+      minikube start 
+    environment:
+      MINIKUBE_IN_STYLE: "true"
+
+  - name: Check Minikube profiles
+    ansible.builtin.command: minikube profile list --output=json
+    register: profile_list
+
+  - name: Enable Ingress add-on if profile exists
+    ansible.builtin.command: minikube addons enable ingress --profile=minikube
+    when: "'minikube' in profile_list.stdout"
+    register: ingress_result
+
+  - name: Show result
+    ansible.builtin.debug:
+      var: ingress_result.stdout
+
+- name: Install Helm on Debian/Ubuntu
+  hosts: all
+  become: true
+  gather_facts: false
+  user: ubuntu
+  become_user: root  
+  tasks:
+
+    - name: Add Helm signing key
+      ansible.builtin.shell: |
+        curl https://baltocdn.com/helm/signing.asc | gpg --dearmor > /usr/share/keyrings/helm.gpg
+      args:
+        creates: /usr/share/keyrings/helm.gpg
+
+    - name: Install apt-transport-https
+      ansible.builtin.apt:
+        name: apt-transport-https
+        state: present
+        update_cache: yes
+
+    - name: Add Helm repository to APT sources
+      ansible.builtin.shell: |
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" > /etc/apt/sources.list.d/helm-stable-debian.list
+      args:
+        creates: /etc/apt/sources.list.d/helm-stable-debian.list
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Helm
+      ansible.builtin.apt:
+        name: helm
+        state: present
+
+    - name: Install make (if needed)
+      ansible.builtin.apt:
+        name: make
+        state: present
