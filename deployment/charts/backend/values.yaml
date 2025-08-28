@@ -20,7 +20,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 config:
-  NAMESPACE: default
+  NAMESPACE: {{ .Release.Name }}
+
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
