@@ -45,7 +45,7 @@ export default function PizzaQueue({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">PizzaQueue</CardTitle>
+        <CardTitle className="text-lg font-semibold">Pizza-Warteschlange</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">

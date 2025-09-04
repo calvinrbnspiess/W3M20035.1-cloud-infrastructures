@@ -119,7 +119,7 @@ function OvenControls({ isRunning, onStart, onStop }: { isRunning: boolean; onSt
   );
 }
 
-function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pizza: Pizza; onRemove: () => void; disableRemove: boolean }) {
+function PizzaRow({ index, pizza, onRemove }: { index: number; pizza: Pizza; onRemove: () => void; }) {
   const isCritical = pizza.secondsLeft <= 60;
   return (
     <div className="flex items-center justify-between rounded border border-gray-200 bg-white p-2">
@@ -135,7 +135,7 @@ function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pi
         >
           {formatTime(pizza.secondsLeft)}
         </span>
-        <Button onClick={onRemove} disabled={disableRemove}>
+        <Button onClick={onRemove}>
           <Minus className="h-3 w-3" />
         </Button>
       </div>
@@ -143,7 +143,7 @@ function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pi
   );
 }
 
-function PizzaSection({ oven, onRemovePizza }: { oven: Oven; onRemovePizza: (pizzaId: string) => void }) {
+function PizzaSection({ oven, onRemovePizza }: { oven: Oven; onRemovePizza: (pizza: Pizza) => void }) {
   return (
     <div className="border-t border-t-gray-300 pt-4">
       <div className="mb-3 flex items-center justify-between">
@@ -159,8 +159,7 @@ function PizzaSection({ oven, onRemovePizza }: { oven: Oven; onRemovePizza: (piz
               key={pizza.id}
               index={idx}
               pizza={pizza}
-              onRemove={() => onRemovePizza(pizza.id)}
-              disableRemove={oven.pizzas.length <= 1}
+              onRemove={() => onRemovePizza(pizza)}
             />
           ))
         )}
@@ -174,9 +173,7 @@ function OvenCard({
   onRemovePizza,
 }: {
   oven: Oven
-  onStart: () => void
-  onStop: () => void
-  onRemovePizza: (pizzaId: string) => void
+  onRemovePizza: (pizza: Pizza) => void
 }) {
   return (
     <Card
@@ -282,7 +279,7 @@ export default function PizzaOvenControl() {
     }, [websocket]);
 
   return (
-    <div className="min-h-screen select-none    bg-slate-50 p-6">
+    <div className="min-h-screen select-none bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
         <PageHeader />
         <SummaryBar ovens={ovens} timeTillNextQueueUpdate={timeTillNextQueueUpdate} />
@@ -299,9 +296,12 @@ export default function PizzaOvenControl() {
             <OvenCard
               key={oven.id}
               oven={oven}
-              onStart={() => {}}
-              onStop={() => {}}
-              onRemovePizza={() => {}}
+              onRemovePizza={(pizza) => {
+                websocket?.send(JSON.stringify({
+                  type: MessageType.REMOVE_PIZZA,
+                  id: pizza.id
+                }))
+              }}
             />
           ))}
         </div>

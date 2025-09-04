@@ -25,5 +25,6 @@ export type State = {
 export enum MessageType {
     UPDATE = "update",
     NOTIFY = "notify",
-    ADD_PIZZA = "add-pizza"
+    ADD_PIZZA = "add-pizza",
+    REMOVE_PIZZA = "remove-pizza"
 }

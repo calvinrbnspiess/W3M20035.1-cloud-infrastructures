@@ -56,6 +56,13 @@ async function addPizzaToQueue(description: string) {
     return true;
 }
 
+async function removePizzaFromOven(id: string) {
+    for (const oven of state.ovens) {
+        oven.pizzas = oven.pizzas.filter(pizza => pizza.id !== id);
+    }
+    sendUpdateToAll();
+}
+
 async function processQueue() {
     if(state.timeTillNextQueueUpdate !== 0) {
         state.timeTillNextQueueUpdate -= 1;
@@ -151,6 +158,14 @@ wss.on('connection', (ws: WebSocket) => {
                             message: `Pizza '${otherData.description ?? 'undefiniert'}' wurde in die Warteschlange gelegt!`
                         }));
                     }
+                case MessageType.REMOVE_PIZZA:
+                    const pizzaId = otherData.id;
+                    
+                    removePizzaFromOven(pizzaId);
+                    ws.send(JSON.stringify({
+                        type: MessageType.NOTIFY,
+                        message: `Pizza wurde entfernt.`
+                    }));
                 default:
                     console.log("Received unknown message type", type);
             }
