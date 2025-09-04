@@ -6,7 +6,9 @@ import { toast } from "sonner";
 
 import { MessageType, type Oven, type Pizza } from "@/types";
 
-import Button from "@/components/button";
+import Button from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import PizzaQueue from "./queue";
 
 /** Utils **/
 const formatTime = (seconds: number): string => {
@@ -66,26 +68,23 @@ function SummaryBar({ ovens }: { ovens: Oven[] }) {
   return (
     <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
       <StatTile value={running} label="Laufende Öfen" />
-      <StatTile value={totalPizzas} label="Gesamtpizzen" />
+      <StatTile value={totalPizzas} label="Pizzas werden gerade zubereitet" />
       <StatTile value={finishingSoon} label="Fertig in wenigen Sekunden" highlight />
     </div>
   );
 }
 
-function TopActions({ onAddPizza }: { onAddPizza: () => void }) {
+function TopActions({ onAddPizza, queue }: { onAddPizza: (description: string) => void; queue: Pizza[] }) {
   return (
-    <div className="mb-8 flex w-fit gap-4 whitespace-nowrap">
-      <Button onClick={onAddPizza} className="w-fit">
-        <PizzaIcon className="mr-1 h-4 w-4" />
-        Pizza anfordern
-      </Button>
+    <div className="mb-8 w-full gap-4 whitespace-nowrap grid grid-cols-1 md:grid-cols-2">
+      <PizzaQueue queue={queue} onAddItem={onAddPizza} />
     </div>
   );
 }
 
 function OvenHeader({ oven }: { oven: Oven }) {
   return (
-    <div className="p-6 pb-3">
+    <div className="pb-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className={`h-5 w-5 shrink-0 ${oven.isRunning ? "text-orange-500" : "text-gray-400"}`} />
@@ -142,11 +141,11 @@ function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pi
   );
 }
 
-function PizzaSection({ oven, onAddPizza, onRemovePizza }: { oven: Oven; onAddPizza: () => void; onRemovePizza: (pizzaId: string) => void }) {
+function PizzaSection({ oven, onRemovePizza }: { oven: Oven; onRemovePizza: (pizzaId: string) => void }) {
   return (
     <div className="border-t border-t-gray-300 pt-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-medium">Pizzen ({oven.pizzas.length}/3)</span>
+        <span className="text-sm font-medium">Pizzen ({oven.pizzas.length}/{oven.capacity})</span>
       </div>
 
       <div className="space-y-2">
@@ -168,30 +167,35 @@ function PizzaSection({ oven, onAddPizza, onRemovePizza }: { oven: Oven; onAddPi
   );
 }
 
-function OvenCard({ oven, onStart, onStop, onAddPizza, onRemovePizza }: {
-  oven: Oven;
-  onStart: () => void;
-  onStop: () => void;
-  onAddPizza: () => void;
-  onRemovePizza: (pizzaId: string) => void;
+function OvenCard({
+  oven,
+  onRemovePizza,
+}: {
+  oven: Oven
+  onStart: () => void
+  onStop: () => void
+  onRemovePizza: (pizzaId: string) => void
 }) {
   return (
-    <div
-      className={`rounded-lg border shadow-sm transition-all duration-300 ${
+    <Card
+      className={`transition-all duration-300 ${
         oven.isRunning ? "border-orange-200 bg-orange-50 ring-2 ring-orange-500" : "border-gray-200 bg-white"
       }`}
     >
-      <OvenHeader oven={oven} />
-      <div className="space-y-4 px-6 pb-6">
-        <PizzaSection oven={oven} onAddPizza={onAddPizza} onRemovePizza={onRemovePizza} />
-      </div>
-    </div>
-  );
+      <CardHeader className="pb-3">
+        <OvenHeader oven={oven} />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <PizzaSection oven={oven} onRemovePizza={onRemovePizza} />
+      </CardContent>
+    </Card>
+  )
 }
-
 /** Main Component **/
 export default function PizzaOvenControl() {
     const [ovens, setOvens] = useState<Oven[]>([]);
+    const [queue, setQueue] = useState<Pizza[]>([]);
+
     const [websocket, setWebsocket] = useState<WebSocket>();
 
     useEffect(() => {
@@ -210,6 +214,7 @@ export default function PizzaOvenControl() {
 
                 console.log(state)
                 setOvens(state.ovens || []);
+                setQueue(state.queue || []);
                 break;
               case MessageType.NOTIFY:
                 const { message } = otherData;
@@ -235,11 +240,11 @@ export default function PizzaOvenControl() {
       <div className="mx-auto max-w-7xl">
         <PageHeader />
         <SummaryBar ovens={ovens} />
-        <TopActions onAddPizza={() => {
+        <TopActions queue={queue} onAddPizza={(description) => {
            toast("Pizza wird angefordert ...");
             websocket?.send(JSON.stringify({
               type: MessageType.ADD_PIZZA,
-              description: "Salami"
+              description: description
             }))
         }} />
 
@@ -250,7 +255,6 @@ export default function PizzaOvenControl() {
               oven={oven}
               onStart={() => {}}
               onStop={() => {}}
-              onAddPizza={() => {}}
               onRemovePizza={() => {}}
             />
           ))}

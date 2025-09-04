@@ -2,7 +2,9 @@
     "name": "cloud-native-pizza-ovens",
     "version": "0.1.0",
     "private": true,
-    "workspaces": ["next-js-directory"],
+    "workspaces": [
+        "next-js-directory"
+    ],
     "scripts": {
         "dev": "next dev --turbopack",
         "build": "next build",
@@ -10,6 +12,7 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@radix-ui/react-select": "^2.2.6",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-react": "^0.536.0",
