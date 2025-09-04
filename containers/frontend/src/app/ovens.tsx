@@ -51,25 +51,27 @@ function StatTile({ value, label, highlight = false }: { value: string | number;
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="p-4">
-        <div className={`text-2xl font-bold ${highlight ? "text-orange-600" : "text-black"}`}>{value}</div>
+        <div className={`text-2xl tabular-nums font-bold ${highlight ? "text-orange-600" : "text-black"}`}>{value}</div>
         <div className="text-sm text-gray-600">{label}</div>
       </div>
     </div>
   );
 }
 
-function SummaryBar({ ovens }: { ovens: Oven[] }) {
+function SummaryBar({ ovens, timeTillNextQueueUpdate }: { ovens: Oven[]; timeTillNextQueueUpdate: number }) {
   const running = useMemo(() => ovens.filter((o) => o.isRunning).length, [ovens]);
   const totalPizzas = useMemo(() => ovens.reduce((t, o) => t + o.pizzas.length, 0), [ovens]);
   const finishingSoon = useMemo(
     () => ovens.reduce((t, o) => t + o.pizzas.filter((p) => p.secondsLeft <= 10).length, 0),
     [ovens]
   );
+
   return (
     <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
       <StatTile value={running} label="Laufende Öfen" />
       <StatTile value={totalPizzas} label="Pizzas werden gerade zubereitet" />
       <StatTile value={finishingSoon} label="Fertig in wenigen Sekunden" highlight />
+      <StatTile value={String(timeTillNextQueueUpdate).padStart(2, '0') + "s"} label="Zeit bis zur Abarbeitung der Warteschlange" />
     </div>
   );
 }
@@ -123,7 +125,7 @@ function PizzaRow({ index, pizza, onRemove, disableRemove }: { index: number; pi
     <div className="flex items-center justify-between rounded border border-gray-200 bg-white p-2">
       <div className="flex items-center gap-2">
         <Timer className="h-4 w-4 text-gray-500" />
-        <span className="text-sm">Pizza {index + 1}</span>
+        <span className="text-sm">{pizza.description}</span>
       </div>
       <div className="flex items-center gap-2">
         <span
@@ -191,55 +193,99 @@ function OvenCard({
     </Card>
   )
 }
+
+export function useWebSocket(url: string) {
+  const [websocket, setWebsocket] = useState<WebSocket>();
+
+  useEffect(() => {
+    let ws: WebSocket;
+    let reconnectTimer: NodeJS.Timeout;
+
+    const connect = () => {
+      ws = new WebSocket(url);
+      setWebsocket(ws);
+
+      ws.addEventListener("open", () => {
+        toast.success("Connected to server");
+        console.log("Connected to server");
+      });
+
+      ws.addEventListener("close", () => {
+        toast.message("⚠️ Disconnected. Reconnecting in 3s...");
+        console.log("Disconnected, retrying...");
+        reconnectTimer = setTimeout(connect, 3000); // retry after 3 seconds
+      });
+
+      ws.addEventListener("error", (err) => {
+        toast.error("WebSocket error");
+        console.error("WebSocket error:", err);
+        ws.close(); // trigger reconnect cycle
+      });
+    };
+
+    connect();
+
+    return () => {
+      clearTimeout(reconnectTimer);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        toast.info("🔌 Disconnecting...");
+        ws.close();
+      }
+    };
+  }, [url]);
+
+  return websocket;
+}
+
+
 /** Main Component **/
 export default function PizzaOvenControl() {
     const [ovens, setOvens] = useState<Oven[]>([]);
     const [queue, setQueue] = useState<Pizza[]>([]);
+    const [timeTillNextQueueUpdate, setTimeTillNextQueueUpdate] = useState(0);
 
-    const [websocket, setWebsocket] = useState<WebSocket>();
+    const websocket = useWebSocket("ws://localhost:1234");
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:1234");
-
-        setWebsocket(ws);
-
-        ws.addEventListener('message', (event) => {
-          try {
-            const { type, ...otherData } = JSON.parse(event.data);
-
-            switch(type) {
-              case MessageType.UPDATE:
-                console.log("Received update");
-                const state = JSON.parse(otherData.state);
-
-                console.log(state)
-                setOvens(state.ovens || []);
-                setQueue(state.queue || []);
-                break;
-              case MessageType.NOTIFY:
-                const { message } = otherData;
-                toast(message);
-              default:
-                console.log("Received unknown message type", type);
-            }
-                
-
-          } catch(error) {
-            console.log("Could not parse message: ", error);
-          }
-        });
+      if (!websocket) return;
     
-        return () => {
-          console.log("Disconnecting");
-          ws.close();
+      const handleMessage = (event: MessageEvent) => {
+        try {
+          const { type, ...otherData } = JSON.parse(event.data);
+    
+          switch (type) {
+            case MessageType.UPDATE: {
+              console.log("Received update");
+              const state = JSON.parse(otherData.state);
+              setOvens(state.ovens || []);
+              setQueue(state.queue || []);
+              setTimeTillNextQueueUpdate(state.timeTillNextQueueUpdate);
+              break;
+            }
+            case MessageType.NOTIFY: {
+              toast.info(otherData.message);
+              break;
+            }
+            default:
+              console.log("Received unknown message type", type);
+          }
+        } catch (error) {
+          console.log("Could not parse message: ", error);
         }
-      }, [setWebsocket, setOvens]);
+      };
+    
+      websocket.addEventListener("message", handleMessage);
+    
+      return () => {
+        websocket.removeEventListener("message", handleMessage);
+      };
+    }, [websocket]);
 
   return (
     <div className="min-h-screen select-none    bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
         <PageHeader />
-        <SummaryBar ovens={ovens} />
+        <SummaryBar ovens={ovens} timeTillNextQueueUpdate={timeTillNextQueueUpdate} />
         <TopActions queue={queue} onAddPizza={(description) => {
            toast("Pizza wird angefordert ...");
             websocket?.send(JSON.stringify({
@@ -248,7 +294,7 @@ export default function PizzaOvenControl() {
             }))
         }} />
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {ovens.map((oven) => (
             <OvenCard
               key={oven.id}

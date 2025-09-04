@@ -5,6 +5,8 @@ import {MessageType, Pizza, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
+const SECONDS_TILL_QUEUE_ITERATION = 15;
+
 let tempUuid: string;
 
 const kubeConfig = new k8s.KubeConfig();
@@ -22,9 +24,9 @@ async function updateOvensFromPods() {
 
         // TODO: remove once everything else works
         
-        await processQueue();
-
         console.log("Updated ovens from server-side");
+
+        sendUpdateToAll();
 
     } catch (err) {
         console.error("Error occurred whilst getting pods from k8s:", err);
@@ -55,6 +57,13 @@ async function addPizzaToQueue(description: string) {
 }
 
 async function processQueue() {
+    if(state.timeTillNextQueueUpdate !== 0) {
+        state.timeTillNextQueueUpdate -= 1;
+        return;
+    }
+
+    state.timeTillNextQueueUpdate = SECONDS_TILL_QUEUE_ITERATION;
+
     if (state.queue.length === 0) {
         return;
     }
@@ -81,9 +90,6 @@ async function processQueue() {
     sendUpdateToAll();
 }
 
-// update every 15 seconds
-setInterval(updateOvensFromPods, 15 * 1000);
-
 const clients = new Set<WebSocket>();
 
 let state: State = {
@@ -91,6 +97,7 @@ let state: State = {
         pods: [] // some information about pods (id, cpu/memory)
         // pizza queue duration length
     },
+    timeTillNextQueueUpdate: SECONDS_TILL_QUEUE_ITERATION,
     ovens: [],
     queue: []
 };
@@ -105,6 +112,15 @@ const sendUpdateToAll = () => {
         sendUpdate(ws);
     })
 }
+
+// update every 15 seconds
+setInterval(updateOvensFromPods, 15 * 1000);
+// send updates every second
+setInterval(() => {
+    processQueue();
+    sendUpdateToAll();
+}, 1000);
+
 
 const wss = new WebSocketServer({port: PORT});
 

@@ -18,7 +18,8 @@ export type State = {
         pods: []
     },
     ovens: Oven[],
-    queue: Pizza[]
+    queue: Pizza[],
+    timeTillNextQueueUpdate: number
 }
 
 export enum MessageType {
