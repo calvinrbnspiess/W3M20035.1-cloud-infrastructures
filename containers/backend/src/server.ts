@@ -5,6 +5,8 @@ import {MessageType, Pizza, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
+const SECONDS_TILL_QUEUE_ITERATION = 15;
+
 let tempUuid: string;
 
 const kubeConfig = new k8s.KubeConfig();
@@ -13,17 +15,18 @@ const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
 
 async function updateOvensFromPods() {
     try {
-        const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
-        const pods = res.items;
-        console.log("Pods:" + pods);
+        //const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
+        //const pods = res.items;
+        //console.log("Pods:" + pods);
 
         //TODO: result mappen
         //TODO: daten ans frontend schicken
 
         // TODO: remove once everything else works
-        await createOvenAsync();
-
+        
         console.log("Updated ovens from server-side");
+
+        sendUpdateToAll();
 
     } catch (err) {
         console.error("Error occurred whilst getting pods from k8s:", err);
@@ -45,30 +48,54 @@ async function createOvenAsync() {
     sendUpdateToAll();
 }
 
-async function createPizza(description: string, ws: WebSocket) {
-    if (state.ovens.length === 0) {
-        ws.send(JSON.stringify({type: MessageType.NOTIFY, message: `No oven available.`}));
-        return false;
-    }
-
-    // Find the first oven with less than 3 pizzas
-    const availableOven = state.ovens.find(oven => oven.pizzas.length < 3);
-
-    if (!availableOven) {
-        ws.send(JSON.stringify({type: MessageType.NOTIFY, message: `There is no free oven.`}));
-        return false;
-    }
-
-    const pizza: Pizza = {description: description, id: uuidv4(), secondsLeft: 90};
-
-    availableOven.pizzas.push(pizza);
+async function addPizzaToQueue(description: string) {
+    const pizza: Pizza = {description: description, id: uuidv4(), secondsLeft: 90, createdAt: new Date().toISOString() };
+    state.queue.push(pizza);
     sendUpdateToAll();
 
     return true;
 }
 
-// Update pods every 5 seconds
-setInterval(updateOvensFromPods, 15 * 1000);
+async function removePizzaFromOven(id: string) {
+    for (const oven of state.ovens) {
+        oven.pizzas = oven.pizzas.filter(pizza => pizza.id !== id);
+    }
+    sendUpdateToAll();
+}
+
+async function processQueue() {
+    if(state.timeTillNextQueueUpdate !== 0) {
+        state.timeTillNextQueueUpdate -= 1;
+        return;
+    }
+
+    state.timeTillNextQueueUpdate = SECONDS_TILL_QUEUE_ITERATION;
+
+    if (state.queue.length === 0) {
+        return;
+    }
+    
+    // iterate ovens, skip full ovens, put pizzas into ovens as long as there is space
+    for (const oven of state.ovens) {
+        while(oven.pizzas.length < oven.capacity) {
+            const pizza = state.queue.shift();
+            if (!pizza) {
+                break;
+            }
+    
+            oven.pizzas.push(pizza);
+        }
+    }
+
+    clients.forEach(ws => {
+        ws.send(JSON.stringify({
+            type: MessageType.NOTIFY,
+            message: `Warteschlange wird abgearbeitet ...`
+        }));
+    })
+
+    sendUpdateToAll();
+}
 
 const clients = new Set<WebSocket>();
 
@@ -77,8 +104,9 @@ let state: State = {
         pods: [] // some information about pods (id, cpu/memory)
         // pizza queue duration length
     },
+    timeTillNextQueueUpdate: SECONDS_TILL_QUEUE_ITERATION,
     ovens: [],
-    pizzas: []
+    queue: []
 };
 
 const sendUpdate = (ws: WebSocket) => {
@@ -92,13 +120,26 @@ const sendUpdateToAll = () => {
     })
 }
 
+// update every 15 seconds
+setInterval(updateOvensFromPods, 15 * 1000);
+// send updates every second
+setInterval(() => {
+    processQueue();
+    sendUpdateToAll();
+}, 1000);
+
+
 const wss = new WebSocketServer({port: PORT});
+
+// create dummy oven
+createOvenAsync();
 
 wss.on('connection', (ws: WebSocket) => {
     clients.add(ws);
 
     // Immediately send the full current state
     sendUpdate(ws);
+    
 
     ws.addEventListener("message", async (message) => {
         try {
@@ -109,14 +150,22 @@ wss.on('connection', (ws: WebSocket) => {
             switch (type) {
                 case MessageType.ADD_PIZZA:
                     console.log("Creating new pizza");
-                    const success = await createPizza(otherData.description, ws);
+                    const success = await addPizzaToQueue(otherData.description);
 
                     if (success) {
                         ws.send(JSON.stringify({
                             type: MessageType.NOTIFY,
-                            message: `Pizza '${otherData.description ?? 'with unknown description'}' created!`
+                            message: `Pizza '${otherData.description ?? 'undefiniert'}' wurde in die Warteschlange gelegt!`
                         }));
                     }
+                case MessageType.REMOVE_PIZZA:
+                    const pizzaId = otherData.id;
+                    
+                    removePizzaFromOven(pizzaId);
+                    ws.send(JSON.stringify({
+                        type: MessageType.NOTIFY,
+                        message: `Pizza wurde entfernt.`
+                    }));
                 default:
                     console.log("Received unknown message type", type);
             }

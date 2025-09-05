@@ -9,7 +9,8 @@ export type Oven = {
 export type Pizza = {
     id: string;
     description: string;
-    secondsLeft: number
+    secondsLeft: number;
+    createdAt: string;
 }
 
 export type State = {
@@ -17,11 +18,12 @@ export type State = {
         pods: []
     },
     ovens: Oven[],
-    pizzas: Pizza[]
+    queue: Pizza[]
 }
 
 export enum MessageType {
     UPDATE = "update",
     NOTIFY = "notify",
-    ADD_PIZZA = "add-pizza"
+    ADD_PIZZA = "add-pizza",
+    REMOVE_PIZZA = "remove-pizza"
 }
