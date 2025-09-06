@@ -18,7 +18,7 @@ Takes an optional description of the pizza.
 Returns whether the application is running.
 
 /health/ready
-Return whether the oven/furnace is currently full (CurrentLoad >= Capacity)
+Return whether the oven is currently full (CurrentLoad >= Capacity)
 
 ### Test running container
 The docker run command from below redirects the exposed port 8080 to 8080 on your local machine.

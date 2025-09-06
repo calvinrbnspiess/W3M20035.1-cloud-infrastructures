@@ -6,7 +6,7 @@
 Technologie: 
 - UI (Next.js/React)
 - Backend (Typescript/Node.js)
-- Oven/Furnace (C#)
+- Oven (C#)
 - Minikube/K8s etc.
 - Prometheus (Dashboard)
 - Ansible (Provisioning und Setup)
