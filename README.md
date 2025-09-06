@@ -40,8 +40,8 @@ Furnace: todo
 `helm uninstall test`  
 `helm uninstall <releasename>`  
 
-`kubectl get pods` (um laufende pods zu bekommen)
-`kubectl logs <podname>` (logs des Pods (container))
+`kubectl get pods` (um laufende Pods zu bekommen)  
+`kubectl logs <podname>` (Logs des Pods/Container))  
 
 To access the frontend:  
 `kubectl port-forward svc/test-frontend 3000:3000`  
