@@ -40,14 +40,17 @@ Furnace: todo
 `helm uninstall test`  
 `helm uninstall <releasename>`  
 
-`kubectl get pods` (um laufende pods zu bekommen)
-`kubectl logs <podname>` (logs des Pods (container))
+`kubectl get pods` (um laufende Pods zu bekommen)  
+`kubectl logs <podname>` (Logs des Pods/Container))  
+
+To access the frontend:  
+`kubectl port-forward svc/test-frontend 3000:3000`  
 
 ## Troubleshooting:
 
-Q: I have a ImagePullBackOff error when reading  `kubectl get pods -A`    
+Q: I have a ImagePullBackOff error when reading  `kubectl get pods`    
 A: Do the following:  
-- `minikube docker-env`
+- `minikube docker-env` TODO: test if this is needed
 - Build all docker images that can not be found (`docker build -t <name-of-image-as-in-helm-values.yaml>:<tag-as-in-helm-values.yaml>` in the correct folder) -> see Docker commands
-- `minikube image load <name-of-built-image>:<tag-of-built-image>`
+- `minikube image load <name-of-built-image>:<tag-of-built-image>` for each image
 - Verify that the error is gone with `kubectl get pods`
