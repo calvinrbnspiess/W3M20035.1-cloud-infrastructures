@@ -15,9 +15,13 @@ const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
 
 async function updateOvensFromPods() {
     try {
-        //const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
-        //const pods = res.items;
-        //console.log("Pods:" + pods);
+        const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
+        const pods = res.items;
+
+        for(let pod of pods.filter(pod => pod.spec?.containers[0].name === "oven")) {
+            console.log(JSON.stringify(pod));
+            console.log("IP: ", pod.status?.podIP);
+        }
 
         //TODO: result mappen
         //TODO: daten ans frontend schicken
@@ -130,6 +134,8 @@ setInterval(() => {
 
 
 const wss = new WebSocketServer({port: PORT});
+
+updateOvensFromPods();
 
 // create dummy oven
 createOvenAsync();
