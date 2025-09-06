@@ -50,3 +50,4 @@ A: Do the following:
 - `minikube docker-env`
 - Build all docker images that can not be found (`docker build -t <name-of-image-as-in-helm-values.yaml>:<tag-as-in-helm-values.yaml>` in the correct folder) -> see Docker commands
 - `minikube image load <name-of-built-image>:<tag-of-built-image>`
+- Verify that the error is gone with `kubectl get pods`
