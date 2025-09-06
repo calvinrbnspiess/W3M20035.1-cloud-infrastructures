@@ -15,12 +15,25 @@ export type Pizza = {
 
 export type State = {
     metrics: {
-        pods: []
+        pods: PodInfo[]
     },
     ovens: Oven[],
     queue: Pizza[],
     timeTillNextQueueUpdate: number
 }
+
+export type PodInfo = {
+    ip?: string;
+    name?: string;
+    creationTimestamp?: Date;
+    status?: Array<{
+      name: string;
+      ready: boolean;
+      restartCount: number;
+      image: string;
+      imageID: string;
+    }>;
+  };
 
 export enum MessageType {
     UPDATE = "update",

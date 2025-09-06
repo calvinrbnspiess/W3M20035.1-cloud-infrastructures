@@ -1,7 +1,7 @@
 import {v4 as uuidv4} from 'uuid';
 import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
-import {MessageType, Pizza, State} from "./types";
+import {MessageType, Pizza, PodInfo, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
@@ -18,10 +18,24 @@ async function updateOvensFromPods() {
         const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
         const pods = res.items;
 
+        const updatedPods: PodInfo[] = [];
+
         for(let pod of pods.filter(pod => pod.metadata?.labels?.app === "oven")) {
-            console.log(JSON.stringify(pod));
             console.log("IP: ", pod.status?.podIP);
+
+            updatedPods.push({
+                ip: pod.status?.podIP,
+                name: pod.metadata?.name,
+                creationTimestamp: pod.metadata?.creationTimestamp,
+                status: pod.status?.containerStatuses
+            })
         }
+
+        state.metrics.pods = updatedPods;
+
+        // now fetch all ovens and update state.ovens
+
+        console.log(updatedPods);
 
         //TODO: result mappen
         //TODO: daten ans frontend schicken
