@@ -43,6 +43,9 @@ Furnace: todo
 `kubectl get pods` (um laufende pods zu bekommen)
 `kubectl logs <podname>` (logs des Pods (container))
 
+To access the frontend:  
+`kubectl port-forward svc/test-frontend 3000:3000`  
+
 ## Troubleshooting:
 
 Q: I have a ImagePullBackOff error when reading  `kubectl get pods`    
