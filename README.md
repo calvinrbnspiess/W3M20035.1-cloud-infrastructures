@@ -24,7 +24,7 @@ minikube start
 ## Docker commands
 Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest .`  
 Backend: `docker build -f containers/backend/Dockerfile --tag backend:latest .`  
-Furnace: todo
+Furnace: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
 
 ## Helm commands
 
