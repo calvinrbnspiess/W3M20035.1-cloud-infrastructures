@@ -1,27 +1,27 @@
 # W3M20035.1-cloud-infrastructures
- Use Case: Skalierbares Pizza backen mit kleiner UI für Metriken
+ Use Case: Skalierbares Pizza backen mit UI für Metriken
  Beispiel: Knopf für Pizzaorder wird gedrückt -> Pizzaofen erscheint im UI und backt Pizza 
-(max. Kapazität 2 Pizzen und Dauer von den Pizzen ca. 1min zu Demonstrationszwecken)
- 
+(max. Kapazität x Pizzen und Dauer von den Pizzen y min zu Demonstrationszwecken)
  
 Technologie: 
-- UI (Pizzaofen Infos)
-- Minikube/K8s/K3s etc.
+- UI (Next.js/React)
+- Backend (Typescript/Node.js)
+- Oven/Furnace (C#)
+- Minikube/K8s etc.
 - Prometheus (Dashboard)
 - Ansible (Provisioning und Setup)
 - Grafana (Dashboard für Metriken)
 - Helm (Kubernetes Deployment)
 - Jaeger (Tracing)
 
-
-## Getting started
+# Getting started
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 
 minikube start  
 kubectl get pods -A (to verify that everything is running)  
 
-
+##
 installieren unser helm charts:  
 
 helm dependency build deployment/charts/application/   
