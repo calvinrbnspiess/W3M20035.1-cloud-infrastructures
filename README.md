@@ -29,7 +29,7 @@ Furnace: todo
 ## Helm commands
 
 helm dependency build deployment/charts/application/  
-helm dependency build <path-to-charts>
+helm dependency build `<path-to-charts>`
 
 helm install test deployment/charts/application/  
 helm install <releasename> <path-to-charts>  
