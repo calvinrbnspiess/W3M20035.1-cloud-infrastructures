@@ -18,7 +18,7 @@ Technologie:
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 
-minikube start  
+`minikube start`  
 `kubectl get pods -A` (to verify that everything is running)  
 
 ## Docker commands
@@ -49,7 +49,16 @@ To access the frontend:
 ## Troubleshooting:
 
 Q: I have a ImagePullBackOff error when reading  `kubectl get pods`    
-A: Do the following:  
+A:    
 - Build all docker images that can not be found (`docker build -t <name-of-image-as-in-helm-values.yaml>:<tag-as-in-helm-values.yaml>` in the correct folder) -> see Docker commands
 - `minikube image load <name-of-built-image>:<tag-of-built-image>` for each image
 - Verify that the error is gone with `kubectl get pods`
+
+Q: How do I update my pods to the latest code change? TODO: not working :(  
+A:  
+- Build the docker image
+- Remove the old docker image from minikube (`minikube ssh` - `docker rmi <image-name>` - `exit`)
+- `minikube image load <name-of-built-image>:<tag-of-built-image>` for the updated image
+- `helm uninstall <releasename>`
+- `helm install <releasename> <path-to-charts>`
+- Verify that the error is gone with `kubectl get pods` and `kubectl logs <podname>`
