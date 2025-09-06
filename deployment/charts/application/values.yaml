@@ -1,2 +1,2 @@
 backend:
-  myvalues: test
+  environment_variable_example: test

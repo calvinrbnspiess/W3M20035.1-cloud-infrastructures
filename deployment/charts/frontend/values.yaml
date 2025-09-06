@@ -20,7 +20,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 config:
-  environment_varaible_examle: test
+  environment_variable_example: test
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
