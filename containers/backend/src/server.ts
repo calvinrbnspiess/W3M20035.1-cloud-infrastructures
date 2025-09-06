@@ -18,7 +18,7 @@ async function updateOvensFromPods() {
         const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
         const pods = res.items;
 
-        for(let pod of pods.filter(pod => pod.spec?.containers[0].name === "oven")) {
+        for(let pod of pods.filter(pod => pod.metadata?.labels?.app === "oven")) {
             console.log(JSON.stringify(pod));
             console.log("IP: ", pod.status?.podIP);
         }
