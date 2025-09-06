@@ -19,24 +19,24 @@ Technologie:
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 
 minikube start  
-kubectl get pods -A (to verify that everything is running)
+kubectl get pods -A (to verify that everything is running)  
 
 
-installieren unser helm charts:
+installieren unser helm charts:  
 
-helm dependency build deployment/charts/application/
-helm dependency build <path-to-charts>
+helm dependency build deployment/charts/application/   
+helm dependency build <path-to-charts>  
 
-helm install test deployment/charts/application/
-helm install <releasename> <path-to-charts>
+helm install test deployment/charts/application/  
+helm install <releasename> <path-to-charts>  
 
-updaten:
-helm dependency update deployment/charts/application/
-helm upgrade test deployment/charts/application/
+updaten:  
+helm dependency update deployment/charts/application/  
+helm upgrade test deployment/charts/application/  
 
-uninstallieren:
-helm uninstall test
-helm uninstall <releasename>
+uninstallieren:  
+helm uninstall test  
+helm uninstall <releasename>  
 
 
 logs:
