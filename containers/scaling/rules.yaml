@@ -1,0 +1,12 @@
+rules:
+  default: false
+  custom:
+    - seriesQuery: 'pizza_api_value' #Variable vom Backend - TODO!!!
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "pizza_api_value"
+        as: "pizza_orders"
+      metricsQuery: 'pizza_api_value'
