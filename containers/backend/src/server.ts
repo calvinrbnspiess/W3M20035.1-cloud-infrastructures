@@ -42,7 +42,7 @@ async function updateOvensFromPods() {
 
         // TODO: remove once everything else works
         
-        console.log("Updated ovens from server-side");
+        console.log("Updated ovens from server-side!");
 
         sendUpdateToAll();
 
