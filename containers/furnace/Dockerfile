@@ -3,10 +3,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy project files, restore dependencies and build
-COPY *.csproj ./
+COPY containers/furnace/*.csproj ./
 RUN dotnet restore
 
-COPY . ./
+COPY containers/furnace/. ./
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0

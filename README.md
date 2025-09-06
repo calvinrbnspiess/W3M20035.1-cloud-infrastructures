@@ -6,7 +6,7 @@
 Technologie: 
 - UI (Next.js/React)
 - Backend (Typescript/Node.js)
-- Oven/Furnace (C#)
+- Oven (C#)
 - Minikube/K8s etc.
 - Prometheus (Dashboard)
 - Ansible (Provisioning und Setup)
@@ -24,7 +24,7 @@ minikube start
 ## Docker commands
 Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest .`  
 Backend: `docker build -f containers/backend/Dockerfile --tag backend:latest .`  
-Furnace: todo
+Oven: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
 
 ## Helm commands
 
@@ -50,7 +50,6 @@ To access the frontend:
 
 Q: I have a ImagePullBackOff error when reading  `kubectl get pods`    
 A: Do the following:  
-- `minikube docker-env` TODO: test if this is needed
 - Build all docker images that can not be found (`docker build -t <name-of-image-as-in-helm-values.yaml>:<tag-as-in-helm-values.yaml>` in the correct folder) -> see Docker commands
 - `minikube image load <name-of-built-image>:<tag-of-built-image>` for each image
 - Verify that the error is gone with `kubectl get pods`
