@@ -54,7 +54,7 @@ A:
 - `minikube image load <name-of-built-image>:<tag-of-built-image>` for each image
 - Verify that the error is gone with `kubectl get pods`
 
-Q: How do I update my pods to the latest code change? TODO: test again and if working remove this todo
+Q: How do I update my pods to the latest code change? TODO: test again and if working remove this todo  
 A:  
 - Build the docker image
 - Remove the old docker image from minikube (`minikube ssh` - `docker rmi <image-name>` - `exit`)
