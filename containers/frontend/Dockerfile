@@ -12,6 +12,11 @@ FROM base AS builder
 WORKDIR /app
 # Copy only the frontend source
 COPY containers/frontend ./
+
+# Set WebSocket URL for build
+ARG NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+
 RUN npm ci
 RUN npm run build
 

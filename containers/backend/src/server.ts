@@ -178,6 +178,7 @@ wss.on('connection', (ws: WebSocket) => {
                             message: `Pizza '${otherData.description ?? 'undefiniert'}' wurde in die Warteschlange gelegt!`
                         }));
                     }
+                    break;
                 case MessageType.REMOVE_PIZZA:
                     const pizzaId = otherData.id;
                     
@@ -186,6 +187,7 @@ wss.on('connection', (ws: WebSocket) => {
                         type: MessageType.NOTIFY,
                         message: `Pizza wurde entfernt.`
                     }));
+                    break;
                 default:
                     console.log("Received unknown message type", type);
             }

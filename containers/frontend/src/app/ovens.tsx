@@ -241,7 +241,7 @@ export default function PizzaOvenControl() {
     const [queue, setQueue] = useState<Pizza[]>([]);
     const [timeTillNextQueueUpdate, setTimeTillNextQueueUpdate] = useState(0);
 
-    const websocket = useWebSocket("ws://localhost:1234");
+    const websocket = useWebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:1234");
 
     useEffect(() => {
       if (!websocket) return;

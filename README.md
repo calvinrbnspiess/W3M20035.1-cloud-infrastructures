@@ -21,8 +21,13 @@ Technologie:
 `minikube start`  
 `kubectl get pods -A` (to verify that everything is running)  
 
+# Build in minikube context:
+
+macOS / linux: ```eval $(minikube docker-env)```
+windows: ```& minikube -p minikube docker-env --shell powershell | Invoke-Expression```
+
 ## Docker commands
-Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest .`  
+Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.local/ws .`  
 Backend: `docker build -f containers/backend/Dockerfile --tag backend:latest .`  
 Oven: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
 
@@ -77,6 +82,16 @@ Otherwise run: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '
 Please run `update-hosts.sh` (macos/linux) to update your hosts file based on the ingress ip.
 
 Now, you need to run `minikube tunnel` to reach the application on 'chart-example.local'.
+
+Q: Restart after updating the image
+
+Restart Pods if needed
+
+Sometimes Kubernetes won’t notice :latest changed (because the tag is the same). To force reload:
+
+```kubectl rollout restart deployment test-frontend```
+
+That deletes old Pods and pulls your updated frontend:latest.
 
 # application erreichen:
 anpassen der etc/host datei (VM):
