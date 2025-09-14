@@ -62,7 +62,7 @@ service:
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
@@ -70,7 +70,7 @@ ingress:
   hosts:
     - host: chart-example.local
       paths:
-        - path: /
+        - path: /backend(/|$)(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls

@@ -62,3 +62,11 @@ A:
 - `helm uninstall <releasename>`
 - `helm install <releasename> <path-to-charts>`
 - Verify that the error is gone with `kubectl get pods` and `kubectl logs <podname>`
+
+
+# application erreichen:
+anpassen der etc/host datei (VM):
+hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local
+
+anpassen der eigennen etc/hostdatei mit chart-example.local 127.0.0.0 
+aufmachen eines ssh  tunnels für chart-example.local zur vm z.B mitt vscode ssh extention
