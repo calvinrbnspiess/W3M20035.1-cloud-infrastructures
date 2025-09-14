@@ -63,6 +63,20 @@ A:
 - `helm install <releasename> <path-to-charts>`
 - Verify that the error is gone with `kubectl get pods` and `kubectl logs <podname>`
 
+Q: I can't access pods from hosts although ingress is running.
+
+The command `kubectl get svc -n ingress-nginx` should show LoadBalancer for ingress and an external ip.
+```
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   10.102.26.215    127.0.0.1     80:30225/TCP,443:30293/TCP   4h31m
+ingress-nginx-controller-admission   ClusterIP      10.100.180.199   <none>        443/TCP                      4h31m
+```
+
+Otherwise run: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "LoadBalancer"}}'`
+
+Please run `update-hosts.sh` (macos/linux) to update your hosts file based on the ingress ip.
+
+Now, you need to run `minikube tunnel` to reach the application on 'chart-example.local'.
 
 # application erreichen:
 anpassen der etc/host datei (VM):

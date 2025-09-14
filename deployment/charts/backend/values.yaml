@@ -22,7 +22,6 @@ fullnameOverride: ""
 config:
   NAMESPACE: "{{ .Release.Name }}"
 
-
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
@@ -70,8 +69,14 @@ ingress:
   hosts:
     - host: chart-example.local
       paths:
-        - path: /backend(/|$)(.*)
-          pathType: ImplementationSpecific
+        # Route all traffic from /ws/* to the backend service
+        - path: /ws
+          pathType: Prefix
+          backend:
+            service:
+              name: backend      # Helm will template this to your release’s service name
+              port:
+                number: 1234     # Must match .Values.service.port
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
