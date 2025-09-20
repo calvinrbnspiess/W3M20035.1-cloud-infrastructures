@@ -90,7 +90,12 @@ async function addPizzaToQueue(description: string) {
 }
 
 async function removePizzaFromOven(id: string) {
-    let matchingOven = state.ovens.find(oven => oven.pizzas.find(pizza => pizza.id !== id));
+    let matchingOven = state.ovens.find(oven => {
+        let hasPizza = !!oven.pizzas.find(pizza => pizza.id === id);
+
+        console.log("has oven pizza?", oven.id, oven.pizzas, hasPizza);
+        return hasPizza;
+    });
     
     if(!matchingOven) {
         console.log(`Could not remove pizza with id ${id} because no matching oven exists.`);
@@ -104,14 +109,8 @@ async function removePizzaFromOven(id: string) {
         return;
     }
 
-    await fetch(`http://${ovenPod.ip}:8080/PizzaOven/remove`, {
+    await fetch(`http://${ovenPod.ip}:8080/PizzaOven/remove/${id}`, {
         method: "DELETE",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            id: id
-        })
     }).then(res => {
         if(res.status === 200) {
             console.log("pizza was successfully removed");
@@ -155,17 +154,17 @@ async function processQueue() {
     // iterate ovens, skip full ovens, put pizzas into ovens as long as there is space
     for (const oven of state.ovens) {
         while(oven.pizzas.length < oven.capacity) {
-            const pizza = state.queue.shift();
-            if (!pizza) {
-                break;
-            }
-    
             const currentOven = getOvenPodById(oven.id);
 
             if(!currentOven) {
                 continue;
             }
 
+            const pizza = state.queue.shift();
+            if (!pizza) {
+                break;
+            }
+    
             console.log("calling add pizza request for oven ", currentOven?.ovenId, "with pod name", currentOven?.name, "and ip", currentOven?.ip);
 
             await fetch(`http://${currentOven.ip}:8080/PizzaOven/add`, {
