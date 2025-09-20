@@ -14,7 +14,7 @@ public class PizzaOvenController(PizzaOvenService oven) : ControllerBase
             OvenId = oven.Id,
             oven.Capacity,
             CurrentLoad = oven.GetLoad(),
-            Pizzas = oven.BakingPizzas.Select(p => new PizzaStatus(p.Key, p.Value)).ToList()
+            Pizzas = oven.BakingPizzas.Select(p => new PizzaStatus(p.Key, p.Value.Progress)).ToList()
         };
         return Ok(status);
     }
@@ -31,6 +31,18 @@ public class PizzaOvenController(PizzaOvenService oven) : ControllerBase
         }
 
         return Accepted(new { PizzaId = pizza.Id, Message = "Pizza in the oven for 90 sec!" });
+    }
+    
+    [HttpDelete("remove")]
+    public async Task<IActionResult> RemovePizza([FromBody] Guid idToRemove)
+    {
+        var success = await oven.TryRemovePizza(idToRemove);
+        if (!success)
+        {
+            return Conflict("Could not remove pizza with id " + idToRemove);
+        }
+
+        return Ok("Pizza with id " + idToRemove + " has been removed.");
     }
 }
 
