@@ -90,18 +90,45 @@ async function addPizzaToQueue(description: string) {
 }
 
 async function removePizzaFromOven(id: string) {
-    for (const oven of state.ovens) {        
-        oven.pizzas = oven.pizzas.filter(pizza => pizza.id !== id);
+    let matchingOven = state.ovens.find(oven => oven.pizzas.find(pizza => pizza.id !== id));
+    
+    if(!matchingOven) {
+        console.log(`Could not remove pizza with id ${id} because no matching oven exists.`);
+        return;
     }
+
+    const ovenPod = getOvenPodById(matchingOven.id);
+    
+    if(!ovenPod) {
+        console.log(`Pod for oven ${matchingOven.id} does not exist.`);
+        return;
+    }
+
+    await fetch(`http://${ovenPod.ip}:8080/PizzaOven/remove`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            id: id
+        })
+    }).then(res => {
+        if(res.status === 200) {
+            console.log("pizza was successfully removed");
+        } else {
+            throw new Error(`Could not remove pizza: ${res.status}, ${res.statusText}`);
+        }
+    }).catch(error => console.log(error));
+
     sendUpdateToAll();
 }
 
 async function scaleUpOvens() {
     console.log("Scaling up and creating new oven pod ...");
-
+    // TODO
 }
 
-function getOvenById(id: string) {
+function getOvenPodById(id: string) {
     return state.metrics.pods.find(pod => pod.ovenId === id);
 }
 
@@ -133,7 +160,7 @@ async function processQueue() {
                 break;
             }
     
-            const currentOven = getOvenById(oven.id);
+            const currentOven = getOvenPodById(oven.id);
 
             if(!currentOven) {
                 continue;
