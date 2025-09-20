@@ -1,3 +1,9 @@
 .idea/
 *.lock
 *.tgz
+deployment/.terraform
+deployment/.env
+deployment/.terraform.lock.hcl
+deployment/openstack-inventory.txt
+deployment/terraform.tfstate
+deployment/terraform.tfstate.backup
