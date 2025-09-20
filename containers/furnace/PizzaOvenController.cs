@@ -33,16 +33,16 @@ public class PizzaOvenController(PizzaOvenService oven) : ControllerBase
         return Accepted(new { PizzaId = pizza.Id, Message = "Pizza in the oven for 90 sec!" });
     }
     
-    [HttpDelete("remove")]
-    public async Task<IActionResult> RemovePizza([FromBody] Guid idToRemove)
+    [HttpDelete("remove/{id}")]
+    public async Task<IActionResult> RemovePizza(Guid id)
     {
-        var success = await oven.TryRemovePizza(idToRemove);
+        var success = await oven.TryRemovePizza(id);
         if (!success)
         {
-            return Conflict("Could not remove pizza with id " + idToRemove);
+            return Conflict("Could not remove pizza with id " + id);
         }
 
-        return Ok("Pizza with id " + idToRemove + " has been removed.");
+        return Ok("Pizza with id " + id + " has been removed.");
     }
 }
 
