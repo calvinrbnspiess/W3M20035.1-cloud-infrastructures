@@ -129,7 +129,7 @@ function PizzaRow({ index, pizza, onRemove }: { index: number; pizza: Pizza; onR
       </div>
       <div className="flex items-center gap-2">
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold ${
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold tabular-nums ${
             isCritical ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"
           }`}
         >
