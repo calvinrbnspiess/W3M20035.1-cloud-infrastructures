@@ -69,7 +69,7 @@ A:
 - Verify that the error is gone with `kubectl get pods` and `kubectl logs <podname>`
 
 Q: I can't access pods from hosts although ingress is running.
-
+A:  
 The command `kubectl get svc -n ingress-nginx` should show LoadBalancer for ingress and an external ip.
 ```
 NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
@@ -84,7 +84,7 @@ Please run `update-hosts.sh` (macos/linux) to update your hosts file based on th
 Now, you need to run `minikube tunnel` to reach the application on 'chart-example.local'.
 
 Q: Restart after updating the image
-
+A:  
 Restart Pods if needed
 
 Sometimes Kubernetes won’t notice :latest changed (because the tag is the same). To force reload:
@@ -93,9 +93,9 @@ Sometimes Kubernetes won’t notice :latest changed (because the tag is the same
 
 That deletes old Pods and pulls your updated frontend:latest.
 
-# application erreichen:
-anpassen der etc/host datei (VM):
-hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local
+# Application erreichen:
+Anpassen der etc/host datei (VM):  
+Hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local  
 
-anpassen der eigennen etc/hostdatei mit chart-example.local 127.0.0.0 
-aufmachen eines ssh  tunnels für chart-example.local zur vm z.B mitt vscode ssh extention
+Anpassen der eigenen etc/hostdatei mit chart-example.local 127.0.0.0  
+Aufmachen eines SSH Tunnels für chart-example.local zur vm z.B mit vscode ssh extension  
