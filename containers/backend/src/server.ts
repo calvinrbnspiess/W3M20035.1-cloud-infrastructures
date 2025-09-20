@@ -151,58 +151,53 @@ async function processQueue() {
         scaleUpOvens();
     }
     
-    // iterate ovens, skip full ovens, put pizzas into ovens as long as there is space
     for (const oven of state.ovens) {
-        // Calculate how many pizzas can be added to this oven
         let availableSlots = oven.capacity - oven.pizzas.length;
         if (availableSlots <= 0) continue;
-
-        let queueIndex = 0; // pointer to the queue
-
+      
+        let queueIndex = 0;
+      
         while (availableSlots > 0 && queueIndex < state.queue.length) {
-            const currentOven = getOvenPodById(oven.id);
-
-            if (!currentOven) {
-                break;
-            }
-
-            const pizza = state.queue[queueIndex];
-            if (!pizza) {
-                break;
-            }
-
-            console.log("calling add pizza request for oven ", currentOven?.ovenId, "with pod name", currentOven?.name, "and ip", currentOven?.ip);
-
-            let success = false;
-            await fetch(`http://${currentOven.ip}:8080/PizzaOven/add`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    description: pizza.description
-                })
-            }).then(res => {
-                if (res.status === 202) {
-                    console.log("pizza was successfully added");
-                    success = true;
-                } else {
-                    throw new Error(`Could not add pizza to pod: ${res.status}, ${res.statusText}`);
-                }
-            }).catch(error => {
-                console.log(error);
-                // Do not remove pizza from queue, just try next time
+          const currentOven = getOvenPodById(oven.id);
+          if (!currentOven) break;
+      
+          const pizza = state.queue[queueIndex];
+          if (!pizza) break;
+      
+          console.log(
+            "calling add pizza request for oven",
+            currentOven.ovenId,
+            "with pod name",
+            currentOven.name,
+            "and ip",
+            currentOven.ip
+          );
+      
+          let success = false;
+          try {
+            const res = await fetch(`http://${currentOven.ip}:8080/PizzaOven/add`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ description: pizza.description })
             });
-
-            if (success) {
-                // Only remove pizza from queue and count down slot if successful
-                state.queue.splice(queueIndex, 1);
-                availableSlots--;
-                // Do not increment queueIndex, as the next pizza is now at the same index
-            } else {
-                // If not successful, try next pizza in queue
-                queueIndex++;
+      
+            if (res.status !== 202) {
+              throw new Error(`Could not add pizza to pod: ${res.status}, ${res.statusText}`);
             }
+      
+            console.log("pizza was successfully added");
+            success = true;
+          } catch (err) {
+            console.error(err);
+          }
+      
+          if (success) {
+            state.queue.splice(queueIndex, 1);
+            availableSlots--;
+            continue; // next pizza now at the same index
+          }
+      
+          queueIndex++; // try next pizza in queue
         }
     }
 
