@@ -11,7 +11,7 @@ Returns the oven ID, capacity, current load and the pizza status for every pizza
 Adds a new pizza to the oven.  
 Takes an optional description of the pizza.
 
-/remove  
+/remove/{id}  
 Removes a pizza from the oven.  
 Needs the id of the pizza to remove.  
 
