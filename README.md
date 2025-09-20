@@ -94,7 +94,8 @@ Sometimes Kubernetes won’t notice :latest changed (because the tag is the same
 That deletes old Pods and pulls your updated frontend:latest.
 
 # Application erreichen:
-Anpassen der etc/host datei (VM):  
+Anpassen der etc/host datei:
+Ort Windows: %windir%\system32\drivers\etc
 Hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local  
 
 Anpassen der eigenen etc/hostdatei mit chart-example.local 127.0.0.0  
