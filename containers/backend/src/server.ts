@@ -1,67 +1,82 @@
 import {v4 as uuidv4} from 'uuid';
 import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
-import {MessageType, Pizza, PodInfo, State} from "./types";
+import {BackendOven, MessageType, Oven, Pizza, PodInfo, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
-const SECONDS_TILL_QUEUE_ITERATION = 15;
-
-let tempUuid: string;
+const SECONDS_TILL_QUEUE_ITERATION = 5;
 
 const kubeConfig = new k8s.KubeConfig();
 kubeConfig.loadFromDefault()
 const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
 
 async function updateOvensFromPods() {
+    let pods: k8s.V1Pod[] = [];
+
     try {
         const res = await k8sApi.listNamespacedPod({ namespace: process.env.NAMESPACE || "default" });
-        const pods = res.items;
-
-        const updatedPods: PodInfo[] = [];
-
-        for(let pod of pods.filter(pod => pod.metadata?.labels?.app === "oven")) {
-            console.log("IP: ", pod.status?.podIP);
-
-            updatedPods.push({
-                ip: pod.status?.podIP,
-                name: pod.metadata?.name,
-                creationTimestamp: pod.metadata?.creationTimestamp,
-                status: pod.status?.containerStatuses
-            })
-        }
-
-        state.metrics.pods = updatedPods;
-
-        // now fetch all ovens and update state.ovens
-
-        console.log(updatedPods);
-
-        //TODO: result mappen
-        //TODO: daten ans frontend schicken
-
-        // TODO: remove once everything else works
-        
-        console.log("Updated ovens from server-side!");
-
-        sendUpdateToAll();
-
+        pods = res.items;
     } catch (err) {
         console.error("Error occurred whilst getting pods from k8s:", err);
     }
-}
 
-async function createOvenAsync() {
-    tempUuid = uuidv4();
-    let oven = {
-        id: tempUuid,
-        capacity: 2,
-        currentLoad: 2,
-        pizzas: [],
-        isRunning: true
-    };
+    const updatedPods: PodInfo[] = [];
 
-    state.ovens.push(oven);
+    for(let pod of pods.filter(pod => pod.metadata?.labels?.app === "oven")) {
+        console.log("IP: ", pod.status?.podIP);
+
+        console.log(JSON.stringify(pod));
+
+        const data = await fetch(`http://${pod.status?.podIP}:8080/PizzaOven/status`).then(res => res.json());
+        
+        const { ovenId, pizzas, ...otherProperties } = data as BackendOven;
+        console.log("received data from oven", data);
+
+        let ovenAlreadyExists = false;
+        
+        const formattedPizzas = pizzas.map(detailedPizza => ({ ...detailedPizza.pizza, secondsLeft: detailedPizza.secondsLeft }));
+
+        state.ovens = state.ovens.map(oven => {
+            if(oven.id.toLowerCase().trim() !== ovenId.toLowerCase().trim()) {
+                return oven;
+            }
+
+            ovenAlreadyExists = true;
+
+            const updatedOven: Oven = {
+                ...oven,
+                ...otherProperties,
+                isRunning: oven.isRunning,
+                pizzas: formattedPizzas,
+            };
+
+            return updatedOven;
+        })
+
+        if(!ovenAlreadyExists) {
+            state.ovens.push({
+                ...otherProperties,
+                isRunning: true,
+                pizzas: formattedPizzas,
+                id: ovenId
+            });
+        }
+
+        updatedPods.push({
+            ip: pod.status?.podIP,
+            ovenId: ovenId,
+            name: pod.metadata?.name,
+            creationTimestamp: pod.metadata?.creationTimestamp,
+            status: pod.status?.containerStatuses
+        })
+    }
+
+    state.metrics.pods = updatedPods;
+
+    console.log(updatedPods);
+    
+    console.log("Updated ovens from server-side!");
 
     sendUpdateToAll();
 }
@@ -75,10 +90,19 @@ async function addPizzaToQueue(description: string) {
 }
 
 async function removePizzaFromOven(id: string) {
-    for (const oven of state.ovens) {
+    for (const oven of state.ovens) {        
         oven.pizzas = oven.pizzas.filter(pizza => pizza.id !== id);
     }
     sendUpdateToAll();
+}
+
+async function scaleUpOvens() {
+    console.log("Scaling up and creating new oven pod ...");
+
+}
+
+function getOvenById(id: string) {
+    return state.metrics.pods.find(pod => pod.ovenId === id);
 }
 
 async function processQueue() {
@@ -92,6 +116,14 @@ async function processQueue() {
     if (state.queue.length === 0) {
         return;
     }
+
+    // Detect when all ovens are full and call a function
+    const allOvensFull = state.ovens.length > 0 && state.ovens.every(oven => oven.pizzas.length >= oven.capacity);
+
+    if (allOvensFull) {
+        console.log("All ovens are full!");
+        scaleUpOvens();
+    }
     
     // iterate ovens, skip full ovens, put pizzas into ovens as long as there is space
     for (const oven of state.ovens) {
@@ -101,7 +133,29 @@ async function processQueue() {
                 break;
             }
     
-            oven.pizzas.push(pizza);
+            const currentOven = getOvenById(oven.id);
+
+            if(!currentOven) {
+                continue;
+            }
+
+            console.log("calling add pizza request for oven ", currentOven?.ovenId, "with pod name", currentOven?.name, "and ip", currentOven?.ip);
+
+            await fetch(`http://${currentOven.ip}:8080/PizzaOven/add`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    description: pizza.description
+                })
+            }).then(res => {
+                if(res.status === 202) {
+                    console.log("pizza was successfully added");
+                } else {
+                    throw new Error(`Could not add pizza to pod: ${res.status}, ${res.statusText}`);
+                }
+            }).catch(error => console.log(error));
         }
     }
 
@@ -138,21 +192,18 @@ const sendUpdateToAll = () => {
     })
 }
 
-// update every 15 seconds
-setInterval(updateOvensFromPods, 15 * 1000);
+// update every second
+setInterval(updateOvensFromPods, 1000);
+
 // send updates every second
 setInterval(() => {
     processQueue();
     sendUpdateToAll();
 }, 1000);
 
-
 const wss = new WebSocketServer({port: PORT});
 
 updateOvensFromPods();
-
-// create dummy oven
-createOvenAsync();
 
 wss.on('connection', (ws: WebSocket) => {
     clients.add(ws);
@@ -194,7 +245,6 @@ wss.on('connection', (ws: WebSocket) => {
         } catch (error) {
             console.log("Could not parse message: ", error);
         }
-
     });
 
     // Basic keep-alive / cleanup

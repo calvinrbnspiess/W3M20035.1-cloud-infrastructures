@@ -78,7 +78,7 @@ export default function PizzaQueue({
                   <span className="font-medium truncate">{item.description}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">{formatTime(new Date(item.createdAt))}</span>
+                  <span className="text-sm text-muted-foreground">{formatTime(new Date(item.createdAt))} Uhr</span>
                   {onRemoveItem && (
                     <Button
                       onClick={() => onRemoveItem(item.id)}

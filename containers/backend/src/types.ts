@@ -1,4 +1,19 @@
-﻿export type Oven = {
+﻿export type BackendOven = {
+    ovenId: string;
+    capacity: number;
+    currentLoad: number;
+    pizzas: BackendPizza[];
+}
+
+export type BackendPizza = {
+    pizza: {
+        id: string;
+        description: string;
+    },
+    secondsLeft: number;
+}
+
+export type Oven = {
     id: string;
     capacity: number;
     currentLoad: number;
@@ -10,7 +25,7 @@ export type Pizza = {
     id: string;
     description: string;
     secondsLeft: number;
-    createdAt: string;
+    createdAt?: string;
 }
 
 export type State = {
@@ -26,6 +41,7 @@ export type PodInfo = {
     ip?: string;
     name?: string;
     creationTimestamp?: Date;
+    ovenId: string;
     status?: Array<{
       name: string;
       ready: boolean;
