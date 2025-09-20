@@ -21,6 +21,7 @@ Technologie:
 `minikube start`  
 `minikube addons enable ingress`  
 `kubectl get pods -A` (to verify that everything is running)  
+`kubectl get svc -n ingress-nginx`  
 
 # Build in minikube context:
 
