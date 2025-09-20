@@ -79,7 +79,8 @@ ingress-nginx-controller             LoadBalancer   10.102.26.215    127.0.0.1  
 ingress-nginx-controller-admission   ClusterIP      10.100.180.199   <none>        443/TCP                      4h31m
 ```
 
-Otherwise run: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "LoadBalancer"}}'`
+Otherwise run: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "LoadBalancer"}}'` (linux/macos)  
+on windows: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{\"spec\": {\"type\": \"LoadBalancer\"}}'`  
 
 Please run `update-hosts.sh` (macos/linux) to update your hosts file based on the ingress ip.
 
