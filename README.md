@@ -23,8 +23,8 @@ Technologie:
 
 # Build in minikube context:
 
-macOS / linux: ```eval $(minikube docker-env)```
-windows: ```& minikube -p minikube docker-env --shell powershell | Invoke-Expression```
+macOS / linux: ```eval $(minikube docker-env)```  
+windows: ```@FOR /f "tokens=*" %i IN ('minikube -p minikube docker-env --shell cmd') DO @%i```
 
 ## Docker commands
 Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.local/ws .`  
