@@ -18,7 +18,8 @@ Technologie:
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 
-`minikube start`  
+`minikube start`
+`minikube addons enable ingress`
 `kubectl get pods -A` (to verify that everything is running)  
 
 # Build in minikube context:
