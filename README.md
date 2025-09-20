@@ -50,7 +50,7 @@ Oven: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
 `kubectl get pods` (um laufende Pods zu bekommen)  
 `kubectl logs <podname>` (Logs des Pods/Container))  
 
-To access the frontend:  
+To access the frontend (not needed if ingress is working correctly):  
 `kubectl port-forward svc/test-frontend 3000:3000`  
 
 ## Troubleshooting:
@@ -94,12 +94,12 @@ Sometimes Kubernetes won’t notice :latest changed (because the tag is the same
 
 ```kubectl rollout restart deployment test-frontend```
 
-That deletes old Pods and pulls your updated frontend:latest.
+This deletes old pods and pulls your updated frontend:latest.
 
 # Application erreichen:
 Anpassen der etc/host datei:  
-Ort Windows: %windir%\system32\drivers\etc  
+Ort Windows: ```%windir%\system32\drivers\etc```  
 Hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local  
 
-Anpassen der eigenen etc/hostdatei mit chart-example.local 127.0.0.0  
-Aufmachen eines SSH Tunnels für chart-example.local zur vm z.B mit vscode ssh extension  
+Anpassen der eigenen etc/hostdatei mit ```chart-example.local 127.0.0.0```  
+Aufmachen eines SSH Tunnels für chart-example.local zur vm z.B mit VSCode SSH extension  
