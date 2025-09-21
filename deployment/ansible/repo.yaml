@@ -1,0 +1,70 @@
+# Run with: ansible-playbook -i ../terraform-openstack/openstack-inventory.txt deploy.yml
+---
+# Begin: Prerequisites
+- hosts: all
+  name: Prerequisites
+  gather_facts: false
+  user: ubuntu
+  become: false
+  vars:
+    helm_version: "v3.14.0"
+    kubectl_version_url: "https://dl.k8s.io/release/stable.txt"
+
+  tasks:
+    - name: Wait for ssh
+      ansible.builtin.wait_for_connection:
+    - name: Wait for cloud-init to finish
+      ansible.builtin.raw: while [ ! -f /var/lib/cloud/instance/boot-finished]; do sleep 10s; done
+      retries: 10
+      delay: 1
+
+
+
+
+- name: pull repo 
+  hosts: all
+  gather_facts: false
+  user: ubuntu
+  become: false
+  tasks:
+
+  - name: Clone W3M20035.1-cloud-infrastructures repository
+    ansible.builtin.git:
+      repo: https://github.com/calvinrbnspiess/W3M20035.1-cloud-infrastructures.git
+      dest: /home/ubuntu/W3M20035.1-cloud-infrastructures
+      version: main   # or specify a branch/tag/commit
+      update: yes
+    become: false     # run as the target user, not root
+
+
+
+- name: Build Docker images from repo
+  hosts: all
+  become: true
+  vars:
+    repo_path: /home/ubuntu/W3M20035.1-cloud-infrastructures
+  tasks:
+    - name: Build Frontend image
+      ansible.builtin.shell: >
+        docker build -f containers/frontend/Dockerfile
+        --tag frontend:latest
+        --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.local/ws
+        .
+      args:
+        chdir: "{{ repo_path }}"
+
+    - name: Build Backend image
+      ansible.builtin.shell: >
+        docker build -f containers/backend/Dockerfile
+        --tag backend:latest
+        .
+      args:
+        chdir: "{{ repo_path }}"
+
+    - name: Build Oven image
+      ansible.builtin.shell: >
+        docker build -f containers/furnace/Dockerfile
+        --tag oven:latest
+        .
+      args:
+        chdir: "{{ repo_path }}"
