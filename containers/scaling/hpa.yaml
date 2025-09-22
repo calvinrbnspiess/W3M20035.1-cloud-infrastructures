@@ -13,7 +13,8 @@ spec:
     - type: External
       external:
         metric:
-          name: pizza_orders   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
+          name: active_pizzas   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
         target:
           type: Value
           value: "2"          # Schwellwert: ab 2 Bestellungen -> skaliere hoch (Also sind mehr als 2 Pizzen in der Queue sollte ein neuer Pod gestartet werden)
+
