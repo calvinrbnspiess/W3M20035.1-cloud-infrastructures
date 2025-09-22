@@ -1,12 +1,13 @@
 rules:
   default: false
   custom:
-    - seriesQuery: 'pizza_api_value' #Variable vom Backend - TODO!!!
+    - seriesQuery: 'pizza_pod_active_pizzas' #Variable vom Backend - TODO!!!
       resources:
         overrides:
           namespace: {resource: "namespace"}
           pod: {resource: "pod"}
       name:
-        matches: "pizza_api_value"
-        as: "pizza_orders"
-      metricsQuery: 'pizza_api_value'
+        matches: "pizza_pod_active_pizzas"
+        as: "active_pizzas"
+      metricsQuery: 'sum(pizza_pod_active_pizzas{<<.LabelMatchers>>})'
+
