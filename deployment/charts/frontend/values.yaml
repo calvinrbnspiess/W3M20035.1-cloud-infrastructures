@@ -65,12 +65,12 @@ ingress:
   className: "nginx"
   annotations: 
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+#    nginx.ingress.kubernetes.io/rewrite-target: /$2
   hosts:
     - host: chart-example.com
       paths:
-        - path: /frontend(/|$)(.*)
-          pathType: ImplementationSpecific
+        - path: /
+          pathType: Prefix
   tls: 
   #  - secretName: chart-example-tls
   #    hosts:
