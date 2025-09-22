@@ -48,7 +48,7 @@
       ansible.builtin.shell: >
         docker build -f containers/frontend/Dockerfile
         --tag frontend:latest
-        --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.local/ws
+        --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws
         .
       args:
         chdir: "{{ repo_path }}"

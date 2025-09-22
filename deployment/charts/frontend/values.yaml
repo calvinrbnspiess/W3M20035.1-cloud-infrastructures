@@ -62,24 +62,19 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: true
-  className: ""
+  className: "nginx"
   annotations: 
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
   hosts:
-    - host: chart-example.local
+    - host: chart-example.com
       paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: frontend  # Helm will template this to match your release name
-              port:
-                number: 3000  # must match .Values.service.port
-  tls: []
+        - path: /frontend(/|$)(.*)
+          pathType: ImplementationSpecific
+  tls: 
   #  - secretName: chart-example-tls
   #    hosts:
-  #      - chart-example.local
+  #      - chart-example.com
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
