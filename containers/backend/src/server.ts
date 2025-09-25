@@ -1,6 +1,7 @@
 import {v4 as uuidv4} from 'uuid';
 import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
+import http from "http";
 import {BackendOven, MessageType, Oven, Pizza, PodInfo, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
@@ -243,7 +244,21 @@ setInterval(() => {
     sendUpdateToAll();
 }, 1000);
 
-const wss = new WebSocketServer({port: PORT});
+const httpServer = http.createServer((req, res) => {
+    if (req.url === '/status' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(state));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not Found' }));
+    }
+  });
+  
+httpServer.listen(PORT, () => {
+    console.log(`HTTP Server listening on port ${PORT}`);
+});
+
+const wss = new WebSocketServer({ server: httpServer });
 
 updateOvensFromPods();
 
