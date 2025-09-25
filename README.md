@@ -28,7 +28,7 @@ macOS / linux: ```eval $(minikube docker-env)```
 windows: ```@FOR /f "tokens=*" %i IN ('minikube -p minikube docker-env --shell cmd') DO @%i``` or ``` minikube -p minikube docker-env --shell powershell | Invoke-Expression``` 
 
 ## Docker commands
-Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.local/ws .`  
+Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws .`  
 Backend: `docker build -f containers/backend/Dockerfile --tag backend:latest .`  
 Oven: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
 
@@ -83,7 +83,7 @@ on windows: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{\"
 
 Please run `update-hosts.sh` (macos/linux) to update your hosts file based on the ingress ip.
 
-Now, you need to run `minikube tunnel` to reach the application on 'chart-example.local'.
+Now, you need to run `minikube tunnel` to reach the application on 'chart-example.com'.
 
 Q: Restart after updating the image
 A:  
@@ -98,7 +98,7 @@ This deletes old pods and pulls your updated frontend:latest.
 # Application erreichen:
 Anpassen der etc/host datei:  
 Ort Windows: ```%windir%\system32\drivers\etc```  
-Hinzufügen des eintrages chart-example.local zur  minikube ip:  192.168.49.2 chart-example.local  
+Hinzufügen des eintrages chart-example.com zur  minikube ip:  192.168.49.2 chart-example.com  
 
-Anpassen der eigenen etc/hostdatei mit ```127.0.0.1 chart-example.local```  
-Aufmachen eines SSH Tunnels für chart-example.local zur vm z.B mit VSCode SSH extension  
+Anpassen der eigenen etc/hostdatei mit ```127.0.0.1 chart-example.com```  
+Aufmachen eines SSH Tunnels für chart-example.com zur vm z.B mit VSCode SSH extension  
