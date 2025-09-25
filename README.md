@@ -101,5 +101,5 @@ Anpassen der etc/host datei:
 Ort Windows: ```%windir%\system32\drivers\etc```  
 Hinzufügen des eintrages chart-example.com zur  minikube ip:  192.168.49.2 chart-example.com  
 
-Anpassen der eigenen etc/hostdatei mit ```chart-example.com 127.0.0.0```  
+Anpassen der eigenen etc/hostdatei mit ```127.0.0.1 chart-example.com```  
 Aufmachen eines SSH Tunnels für chart-example.com zur vm z.B mit VSCode SSH extension  
