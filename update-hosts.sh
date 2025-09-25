@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOMAIN="chart-example.local"
+DOMAIN="chart-example.com"
 
 # Hole die External IP vom Ingress Controller
 IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx \

@@ -52,12 +52,12 @@
         chdir: /home/ubuntu/W3M20035.1-cloud-infrastructures
       register: helm_install_result
 
-- name: Add chart-example.local to /etc/hosts
+- name: Add chart-example.com to /etc/hosts
   hosts: all
   become: true   # needed to modify /etc/hosts
   tasks:
-    - name: Ensure chart-example.local entry exists in /etc/hosts
+    - name: Ensure chart-example.com entry exists in /etc/hosts
       ansible.builtin.lineinfile:
         path: /etc/hosts
-        line: "192.168.49.2 chart-example.local"
+        line: "192.168.49.2 chart-example.com"
         state: present
