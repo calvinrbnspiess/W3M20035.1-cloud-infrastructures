@@ -2,6 +2,7 @@
 # Prometheus  
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts  
 helm install prometheus prometheus-community/prometheus  
+helm upgrade prometheus prometheus-community/prometheus -f <path to values.yaml>  
 # Grafana  
 helm repo add grafana https://grafana.github.io/helm-charts  
 helm install grafana grafana/grafana -n default  
