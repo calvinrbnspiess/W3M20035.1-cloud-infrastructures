@@ -71,7 +71,7 @@ ingress:
       paths:
         - path: /ws(/|$)(.*)
           pathType: ImplementationSpecific
-  tls: 
+  tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.com
