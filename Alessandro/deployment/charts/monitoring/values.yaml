@@ -3,9 +3,11 @@
 # example adds prometheus-blackbox-exporter scrape config
 extraScrapeConfigs: |
   - job_name: 'api'
-    metrics path: /status
+    metrics_path: /status
     static_configs:
-      - targets: ['test-backend:1234']
+      - targets:
+        # - 'test-backend.default.svc.cluster.local:1234'
+        - 'test-backend:1234'
   # - job_name: 'prometheus-blackbox-exporter'
   #   metrics_path: /probe
   #   params:

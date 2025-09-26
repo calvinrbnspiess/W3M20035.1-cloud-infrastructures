@@ -1,0 +1,12 @@
+dependencies:
+- name: backend
+  repository: file://../backend
+  version: 0.1.0
+- name: oven
+  repository: file://../oven
+  version: 0.1.0
+- name: frontend
+  repository: file://../frontend
+  version: 0.1.0
+digest: sha256:62cb830011bc115b4f453dc3c9b954a05fd9154b505a7699a3915c4a2354b270
+generated: "2025-09-26T15:35:09.0676802+02:00"
