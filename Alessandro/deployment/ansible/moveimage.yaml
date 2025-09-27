@@ -19,7 +19,13 @@
       delay: 1
 
 
+- name: Add prometheus Helm repo
+  ansible.builtin.command:
+    cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
 
+- name: Add Grafana Helm repo
+  ansible.builtin.command:
+    cmd: helm repo add grafana https://grafana.github.io/helm-charts
 
 - name: Move images from host Docker to Minikube
   hosts: all
@@ -60,4 +66,24 @@
       ansible.builtin.lineinfile:
         path: /etc/hosts
         line: "192.168.49.2 chart-example.com"
+        state: present
+
+- name: Add chart-grafana.com to /etc/hosts
+  hosts: all
+  become: true   # needed to modify /etc/hosts
+  tasks:
+    - name: Ensure chart-grafana.com entry exists in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "192.168.49.2 chart-grafana.com"
+        state: present
+
+- name: Add chart-monitoring.com to /etc/hosts
+  hosts: all
+  become: true   # needed to modify /etc/hosts
+  tasks:
+    - name: Ensure chart-monitoring.com entry exists in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "192.168.49.2 chart-monitoring.com"
         state: present
