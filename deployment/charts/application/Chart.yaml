@@ -33,3 +33,7 @@ dependencies:
   - name: frontend
     version: ^0.1.0
     repository: file://../frontend
+  - name: prometheus
+    version: 26.0.0
+    repository: https://prometheus-community.github.io/helm-charts
+  # condition: prometheus.enabled
