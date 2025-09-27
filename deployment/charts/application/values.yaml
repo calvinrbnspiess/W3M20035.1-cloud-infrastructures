@@ -24,7 +24,7 @@ prometheus:
         - /etc/config/alerts
 
       scrape_configs:
-        - job_name: 'postgres-exporter-site'
+        - job_name: 'test-backend'
           static_configs:
             - targets:
-              - tsdb:9187
+              - test-backend:1234
