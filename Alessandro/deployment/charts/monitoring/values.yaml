@@ -3,11 +3,16 @@
 # example adds prometheus-blackbox-exporter scrape config
 extraScrapeConfigs: |
   - job_name: 'api'
+    scheme: 'http'  # This forces Prometheus to use HTTP
+    enable_http2: false
     metrics_path: /status
     static_configs:
       - targets:
         # - 'test-backend.default.svc.cluster.local:1234'
-        - 'test-backend:1234'
+        - test-backend:1234
+
+
+test:
   # - job_name: 'prometheus-blackbox-exporter'
   #   metrics_path: /probe
   #   params:
