@@ -29,4 +29,16 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
+    {{- if .Values.autoscaling.external }}
+    {{- range .Values.autoscaling.external }}
+    - type: {{ .type }}
+      external:
+        metric:
+          name: {{ .external.metric.name }}
+        target:
+          type: {{ .external.target.type }}
+          value: {{ .external.target.value }}
+    {{- end }}
+    {{- end }}
+
 {{- end }}
