@@ -2,6 +2,7 @@ import {v4 as uuidv4} from 'uuid';
 import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
 import http from "http";
+import prometheusClient from "prom-client";
 import {BackendOven, MessageType, Oven, Pizza, PodInfo, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
@@ -11,6 +12,16 @@ const SECONDS_TILL_QUEUE_ITERATION = 5;
 const kubeConfig = new k8s.KubeConfig();
 kubeConfig.loadFromDefault()
 const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
+
+const collectDefaultMetrics = prometheusClient.collectDefaultMetrics;
+const prometheusRegistry = new prometheusClient.Registry();
+
+const prometheusQueueLengthGauge = new prometheusClient.Gauge({ name: 'queue_length', help: 'queue_length_help' });
+const prometheusUnusedCapacity = new prometheusClient.Gauge({ name: 'unused_capacity', help: 'unused_capacity_help' });
+
+collectDefaultMetrics({ register: prometheusRegistry });
+prometheusRegistry.registerMetric(prometheusQueueLengthGauge);
+prometheusRegistry.registerMetric(prometheusUnusedCapacity);
 
 async function updateOvensFromPods() {
     let pods: k8s.V1Pod[] = [];
@@ -79,6 +90,14 @@ async function updateOvensFromPods() {
     
     console.log("Updated ovens from server-side!");
 
+    /* update prometheus metrics */
+    const totalCapacity: number = state.ovens.map(oven => oven.capacity).reduce((accumulator, currentValue) => accumulator + currentValue);
+    const currentLoad: number = state.ovens.map(oven => oven.currentLoad).reduce((accumulator, currentValue) => accumulator + currentValue);
+    console.log("Total capacity:", totalCapacity, "Current Load:", currentLoad);
+
+    prometheusQueueLengthGauge.set(state.queue.length);
+    prometheusUnusedCapacity.set(totalCapacity - currentLoad);
+
     sendUpdateToAll();
 }
 
@@ -124,8 +143,7 @@ async function removePizzaFromOven(id: string) {
 }
 
 async function scaleUpOvens() {
-    console.log("Scaling up and creating new oven pod ...");
-    // TODO
+    console.log("Advice: scaling up and creating new oven pod ...");
 }
 
 function getOvenPodById(id: string) {
@@ -244,13 +262,17 @@ setInterval(() => {
     sendUpdateToAll();
 }, 1000);
 
-const httpServer = http.createServer((req, res) => {
+const httpServer = http.createServer(async (req, res) => {
     if (req.url === '/status' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(state));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(state));
+    } else if(req.url === '/metrics' && req.method === 'GET') {
+        const result = await prometheusRegistry.metrics();
+        res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' });
+        res.end(result);
     } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Not Found' }));
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not Found' }));
     }
   });
   
