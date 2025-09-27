@@ -45,6 +45,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+            - name: prom
+              containerPort: {{ .Values.service.portPromethus }}
+              protocol: TCP
           env:
           {{- range $key, $value := .env }}
             - name: {{ $key  }}

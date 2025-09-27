@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.portPromethus }}
+      targetPort: {{ .Values.service.portPromethus }}
+      protocol: TCP
+      name: prom
   selector:
     {{- include "backend.selectorLabels" . | nindent 4 }}

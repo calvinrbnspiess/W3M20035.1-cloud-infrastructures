@@ -3,6 +3,10 @@ import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
 import http from "http";
 import {BackendOven, MessageType, Oven, Pizza, PodInfo, State} from "./types";
+import { Registry, collectDefaultMetrics, Counter, Gauge } from 'prom-client';
+import express from 'express';
+
+
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 
@@ -244,19 +248,52 @@ setInterval(() => {
     sendUpdateToAll();
 }, 1000);
 
-const httpServer = http.createServer((req, res) => {
-    if (req.url === '/status' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(state));
-    } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Not Found' }));
-    }
-  });
-  
-httpServer.listen(PORT, () => {
-    console.log(`HTTP Server listening on port ${PORT}`);
+const http = require('http');
+const express = require('express');
+const { Registry, collectDefaultMetrics, Gauge } = require('prom-client');
+
+// Prometheus setup
+const registry = new Registry();
+collectDefaultMetrics({ register: registry });
+
+const customGauge = new Gauge({
+  name: 'custom_metric_increment_by_2',
+  help: 'A custom metric that increases by 2 every second',
+  registers: [registry],
+  labelNames: ['method', 'path', 'status'],
 });
+
+let value = 0;
+setInterval(() => {
+  value += 2;
+  customGauge.set({ method: 'GET', path: '/status', status: '200' }, value);
+}, 1000);
+
+// Express app for Prometheus metrics
+const app = express();
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', registry.contentType);
+  res.send(await registry.metrics());
+});
+app.listen(9100, () => {
+  console.log('Prometheus metrics exposed on http://localhost:9100/metrics');
+});
+
+// HTTP server for /status endpoint
+const PORT = 3000;
+const httpServer = http.createServer((req, res) => {
+  if (req.url === '/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', value }));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not Found' }));
+  }
+});
+httpServer.listen(PORT, () => {
+  console.log(`HTTP Server listening on http://localhost:${PORT}/status`);
+});
+
 
 const wss = new WebSocketServer({ server: httpServer });
 

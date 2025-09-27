@@ -1,6 +1,18 @@
 backend:
   environment_variable_example: test
 prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    hosts:
+      - host: chart-example.com
+        paths:
+          - path: /prometheus(/|$)(.*)
+            pathType: ImplementationSpecific
+    tls: []
   server:
     global:
       ## How frequently to scrape targets by default
@@ -27,4 +39,8 @@ prometheus:
         - job_name: 'test-backend'
           static_configs:
             - targets:
-              - test-backend:1234
+              - test-backend:9100
+
+
+
+
