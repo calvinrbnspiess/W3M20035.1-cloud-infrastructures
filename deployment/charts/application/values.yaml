@@ -40,3 +40,13 @@ prometheus:
           static_configs:
             - targets:
               - test-backend:1234
+grafana:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations: {}
+    hosts:
+      - chart-grafana.com
+  
+
+
