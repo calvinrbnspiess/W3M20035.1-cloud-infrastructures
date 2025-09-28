@@ -84,6 +84,7 @@ public class PizzaOvenService
 
     public void SetShutdownState()
     {
+        Console.WriteLine($"State set to Shutdown for oven: {Id}");
         State = "Shutdown";
     }
 }
