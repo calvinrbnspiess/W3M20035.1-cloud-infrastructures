@@ -3,7 +3,7 @@ import * as k8s from '@kubernetes/client-node';
 import {WebSocketServer} from "ws";
 import http from "http";
 import prometheusClient from "prom-client";
-import {BackendOven, MessageType, Oven, Pizza, PodInfo, State} from "./types";
+import {BackendOven, MessageType, Pizza, PodInfo, State} from "./types";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
 

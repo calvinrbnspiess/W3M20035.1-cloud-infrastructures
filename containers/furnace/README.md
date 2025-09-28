@@ -19,7 +19,7 @@ Needs the id of the pizza to remove.
 /shutdown  
 Sets the oven state from 'Running' to 'Shutdown'
 
-### Healthchecks
+### Health checks
 
 /health/live
 Returns whether the application is running.
