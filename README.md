@@ -14,17 +14,6 @@ Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann 
 
 ---
 
-## Inhaltsverzeichnis
-- [Technologien](#️-technologien)
-- [Getting Started](#-getting-started)
-- [Docker Build](#-docker-build)
-- [Helm Commands](#-helm-commands)
-- [Monitoring Setup](#-monitoring-setup)
-- [Zugriff auf die Anwendung](#-zugriff-auf-die-anwendung)
-- [Projekt Deployment (Cloud)](#-projekt-deployment-cloud)
-- [Troubleshooting](#-troubleshooting)
----
-
 ## Technologien  
 - **UI:** Next.js / React  
 - **Backend:** TypeScript / Node.js  
