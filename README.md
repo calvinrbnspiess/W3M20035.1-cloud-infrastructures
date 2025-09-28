@@ -31,13 +31,13 @@ Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann 
 
 ## Getting Started  
 
-For gehen um eine laufende instalation in der zu erhalten in dem OpenStackcluster:
-Erstellen der VM mit Teraform, Datei mit den entsprechenden rechten anpassen. 
+Vorgehen um eine laufende Installation im OpenStackCluster zu erhalten:
+Erstellen der VM mit Teraform, Datei mit den entsprechenden Rechten anpassen. 
 ```bash
 cd deployment
 terraform apply
 ```
-Lauffenlassen der ansible sckripte um einen Ubuntuserver aufzusetzen und die Applikation in minikube zu installlieren:
+Ausführen der Ansible Skripte um einen Ubuntuserver aufzusetzen und die Applikation in minikube zu installieren:
 
 ```bash
 ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_key>"
@@ -46,20 +46,20 @@ ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key
 ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_key>"
 ```
 
-Um die Application zu erreichem  muss die /etc/hosts Datei angepast werden (tested for manjaro Linux)
+Um die Applikation zu erreichem muss die /etc/hosts Datei angepast werden (tested for manjaro Linux)
 ```
 127.0.0.1 chart-example.com
 127.0.0.1 chart-monitoring.com
 127.0.0.1 chart-grafana.com
 ```
 
-Ansließend müssen zwei ssh tunnels für die applikation geöffnet werden.
+Anschließend müssen zwei SSH Tunnel für die Applikation geöffnet werden.
 **SSH Tunnel:**  
 ```bash
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
 ```
-Alternative kann die Apliaktion natürlich auch local in minikuibe oder einem cluster laufen. Im Folden wied das loale minikube setup beschreiben getestet wurde diese anleitung auf Linux (Manjaro)
+Alternativ kann die Applikation natürlich auch lokal in minikube oder einem Cluster laufen. Im Folgenden wird das lokale minikube Setup beschrieben. Getestet wurde diese anleitung auf Linux (Manjaro) & Windows 10  
 ### Voraussetzungen  
 - [Minikube installieren](https://minikube.sigs.k8s.io/docs/start/)  
 - [kubectl installieren](https://kubernetes.io/docs/tasks/tools/)  
