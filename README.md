@@ -59,7 +59,7 @@ Ansließend müssen zwei ssh tunnels für die applikation geöffnet werden.
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
 ```
-Alternative kann die Apliaktion natürlich auch local in minikuibe oder einem cluster laufen. Im Folden wied das loale minikube setup beschreiben:
+Alternative kann die Apliaktion natürlich auch local in minikuibe oder einem cluster laufen. Im Folden wied das loale minikube setup beschreiben getestet wurde diese anleitung auf Linux (Manjaro)
 ### Voraussetzungen  
 - [Minikube installieren](https://minikube.sigs.k8s.io/docs/start/)  
 - [kubectl installieren](https://kubernetes.io/docs/tasks/tools/)  
@@ -110,35 +110,9 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm upgrade prometheus prometheus-community/prometheus -f deployment/charts/apllication/values.yaml
 helm dependency build deployment/charts/application/
 helm install test deployment/charts/application/
-kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
-
-Open Grafana: [chart-grafana.com](http://chart-grafana.com)
-Username: admin
-Passwort return from <kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>
-
-Add Data Source:
-Connections -> Data Source -> Add new Data Source -> Prometheus
-Prometheus server URL: http://test-prometheus-server
-Save & test
-
-Add Dashboards:
-New -> Import
-Custom Dashboard
-containers/monitoring/Grafana_Dashboard_Pizza_Details.json
-
-From Web
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)
 ```
 
-Nach einer Startphase erreichbar unter:  
--  **Applikation:** [chart-example.com](http://chart-example.com)  
--  **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
--  **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
-
----
 #### Hosts-Datei anpassen
-getestet für Linux (manjaro)
 
 **Windows:**  
 `%windir%\system32\drivers\etc\hosts`  
@@ -150,6 +124,37 @@ Beispiel:
 192.168.49.2 chart-monitoring.com
 192.168.49.2 chart-grafana.com
 ```
+Nach einer Startphase erreichbar unter:  
+-  **Applikation:** [chart-example.com](http://chart-example.com)  
+-  **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
+-  **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
+
+
+#### Grafana configurieren:
+```
+kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+```
+
+Open Grafana: [chart-grafana.com](http://chart-grafana.com):
+
+- Username: admin
+- Passwort return from ```<kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>```
+
+Add Data Source:
+- Connections -> Data Source -> Add new Data Source -> Prometheus
+- Prometheus server URL: http://test-prometheus-server
+- Save & test
+
+Add Dashboards:
+New -> Import
+Custom Dashboard
+containers/monitoring/Grafana_Dashboard_Pizza_Details.json
+
+From Web
+[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)
+[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)
+
+
 ---
 ## Troubleshooting  
 Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgetertenen Befehlen auf unterscheidlichen Platformen
