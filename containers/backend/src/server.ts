@@ -35,6 +35,7 @@ async function updateOvensFromPods() {
     }
 
     const updatedPods: PodInfo[] = [];
+    const updatedOvens = [];
 
     for(let pod of pods.filter(pod => pod.metadata?.labels?.app === "oven")) {
         console.log("IP: ", pod.status?.podIP);
@@ -52,36 +53,15 @@ async function updateOvensFromPods() {
         
         const { ovenId, pizzas, ...otherProperties } = data as BackendOven;
         console.log("received data from oven", data);
-
-        let ovenAlreadyExists = false;
         
         const formattedPizzas = pizzas.map(detailedPizza => ({ ...detailedPizza.pizza, secondsLeft: detailedPizza.secondsLeft }));
 
-        state.ovens = state.ovens.map(oven => {
-            if(oven.id.toLowerCase().trim() !== ovenId.toLowerCase().trim()) {
-                return oven;
-            }
-
-            ovenAlreadyExists = true;
-
-            const updatedOven: Oven = {
-                ...oven,
-                ...otherProperties,
-                isRunning: oven.isRunning,
-                pizzas: formattedPizzas,
-            };
-
-            return updatedOven;
-        })
-
-        if(!ovenAlreadyExists) {
-            state.ovens.push({
-                ...otherProperties,
-                isRunning: true,
-                pizzas: formattedPizzas,
-                id: ovenId
-            });
-        }
+        updatedOvens.push({
+            ...otherProperties,
+            isRunning: true,
+            pizzas: formattedPizzas,
+            id: ovenId
+        });
 
         updatedPods.push({
             ip: pod.status?.podIP,
@@ -93,6 +73,7 @@ async function updateOvensFromPods() {
     }
 
     state.metrics.pods = updatedPods;
+    state.ovens = updatedOvens;
 
     console.log(updatedPods);
     
