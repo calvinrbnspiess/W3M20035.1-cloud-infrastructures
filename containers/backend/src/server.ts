@@ -80,8 +80,8 @@ async function updateOvensFromPods() {
     console.log("Updated ovens from server-side!");
 
     /* update prometheus metrics */
-    const totalCapacity: number = state.ovens.map(oven => oven.capacity).reduce((accumulator, currentValue) => accumulator + currentValue);
-    const currentLoad: number = state.ovens.map(oven => oven.currentLoad).reduce((accumulator, currentValue) => accumulator + currentValue);
+    const totalCapacity = state.ovens.reduce((sum, oven) => sum + oven.capacity, 0);
+    const currentLoad = state.ovens.reduce((sum, oven) => sum + oven.currentLoad, 0);
     console.log("Total capacity:", totalCapacity, "Current Load:", currentLoad);
 
     prometheusQueueLengthGauge.set(state.queue.length);
