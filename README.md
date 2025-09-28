@@ -7,52 +7,72 @@ Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann 
 
 ---
 
-## 📑 Inhaltsverzeichnis
-- [⚙️ Technologien](#️-technologien)
-- [🚀 Getting Started](#-getting-started)
-- [🐳 Docker Build](#-docker-build)
-- [⎈ Helm Commands](#-helm-commands)
-- [📊 Monitoring Setup](#-monitoring-setup)
-- [🌐 Zugriff auf die Anwendung](#-zugriff-auf-die-anwendung)
-- [🏗 Projekt Deployment (Cloud)](#-projekt-deployment-cloud)
-- [🛠 Troubleshooting](#-troubleshooting)
+## Inhaltsverzeichnis
+- [Technologien](#️-technologien)
+- [Getting Started](#-getting-started)
+- [Docker Build](#-docker-build)
+- [Helm Commands](#-helm-commands)
+- [Monitoring Setup](#-monitoring-setup)
+- [Zugriff auf die Anwendung](#-zugriff-auf-die-anwendung)
+- [Projekt Deployment (Cloud)](#-projekt-deployment-cloud)
+- [Troubleshooting](#-troubleshooting)
 ---
 
-## ⚙️ Technologien  
+## Technologien  
 - **UI:** Next.js / React  
 - **Backend:** TypeScript / Node.js  
 - **Ofen:** C#  
-- **Orchestrierung:** Minikube / Kubernetes / Helm  
+- **Orchestrierung:** Minikube / Kubernetes  
 - **Monitoring:** Prometheus & Grafana  
 - **Provisionierung:** Ansible  
 - **Deployment:** Helm  
 
 ---
 
-## 🚀 Getting Started  
+## Getting Started  
 
+For gehen um eine laufende instalation in der zu erhalten in dem OpenStackcluster:
+Erstellen der VM mit Teraform, Datei mit den entsprechenden rechten anpassen. 
+```bash
+cd deployment
+terraform apply
+```
+Lauffenlassen der ansible sckripte um einen Ubuntuserver aufzusetzen und die Applikation in minikube zu installlieren:
+
+```bash
+ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/minikubehelm.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_key>"
+```
+
+Um die Application zu erreichem  muss die /etc/hosts Datei angepast werden (tested for manjaro Linux)
+```
+127.0.0.1 chart-example.com
+127.0.0.1 chart-monitoring.com
+127.0.0.1 chart-grafana.com
+```
+
+Ansließend müssen zwei ssh tunnels für die applikation geöffnet werden.
+**SSH Tunnel:**  
+```bash
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
+```
+Alternative kann die Apliaktion natürlich auch local in minikuibe oder einem cluster laufen. Im Folden wied das loale minikube setup beschreiben:
 ### Voraussetzungen  
 - [Minikube installieren](https://minikube.sigs.k8s.io/docs/start/)  
 - [kubectl installieren](https://kubernetes.io/docs/tasks/tools/)  
 
-### Minikube starten  
+#### Minikube starten  
 ```bash
 minikube start
 minikube addons enable ingress
-kubectl get pods -A        # Überprüfung ob alles läuft
-kubectl get svc -n ingress-nginx
+minikube addons enable metrics-server
 ```
 
-Nach einer Startphase erreichbar unter:  
-- 🍕 **Applikation:** [chart-example.com](http://chart-example.com)  
-- 📈 **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
-- 📊 **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
+ Docker Build  
 
----
-
-## 🐳 Docker Build  
-
-### Build im Minikube-Context aktivieren  
 **macOS / Linux:**  
 ```bash
 eval $(minikube docker-env)
@@ -67,7 +87,7 @@ oder
 minikube -p minikube docker-env --shell powershell | Invoke-Expression
 ```
 
-### Docker Images bauen  
+#### Docker Images bauen  
 ```bash
 # Frontend
 docker build -f containers/frontend/Dockerfile --tag frontend:latest \
@@ -82,43 +102,24 @@ docker build -f containers/furnace/Dockerfile --tag oven:latest .
 
 ---
 
-## ⎈ Helm Commands  
+#### Helm Commands  
 
-```bash
-# Dependencies
-helm dependency build deployment/charts/application/
-helm dependency build <path-to-charts>
-
-# Installation
-helm install test deployment/charts/application/
-helm install <releasename> <path-to-charts>
-
-# Updates
-helm dependency update deployment/charts/application/
-helm upgrade test deployment/charts/application/
-
-# Deinstallation
-helm uninstall test
-helm uninstall <releasename>
-```
-
-**Debugging & Logs**  
-```bash
-kubectl get pods            # Laufende Pods
-kubectl logs <podname>      # Logs anzeigen
-kubectl port-forward svc/test-frontend 3000:3000   # Falls Ingress nicht greift
-```
----
-## 📊 Monitoring Setup  
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm dependency build deployment/charts/application/
 helm install test deployment/charts/application/
 ```
+
+Nach einer Startphase erreichbar unter:  
+-  **Applikation:** [chart-example.com](http://chart-example.com)  
+-  **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
+-  **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
+
 ---
-## 🌐 Zugriff auf die Anwendung  
-### Hosts-Datei anpassen  
+#### Hosts-Datei anpassen
+getestet für Linux (manjaro)
+
 **Windows:**  
 `%windir%\system32\drivers\etc\hosts`  
 **Linux/macOS:**  
@@ -126,36 +127,13 @@ helm install test deployment/charts/application/
 Beispiel:  
 ```
 192.168.49.2 chart-example.com
-127.0.0.1    chart-example.com
+192.168.49.2 chart-monitoring.com
+192.168.49.2 chart-grafana.com
 ```
 ---
-## 🏗 Projekt Deployment (Cloud)  
-```bash
-cd deployment
-terraform apply
-```
-**Ansible Playbooks:**  
-```bash
-ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_key>"
-ansible-playbook -i openstack-inventory.txt ansible/minikubehelm.yaml -key-file "<path_to_key>"
-ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key-file "<path_to_key>"
-ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_key>"
-```
-**Hosts anpassen:**  
-```
-127.0.0.1 chart-example.com
-127.0.0.1 chart-monitoring.com
-127.0.0.1 chart-grafana.com
-```
-**SSH Tunnel:**  
-```bash
-ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
-ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
-```
----
-## 🛠 Troubleshooting  
-### ❓ Problem: `ImagePullBackOff` in `kubectl get pods`  
-✅ Lösung:  
+## Troubleshooting  
+Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgetertenen Befehlen auf unterscheidlichen Platformen
+### Problem: `ImagePullBackOff` in `kubectl get pods`  
 1. Docker Images lokal bauen (siehe oben).  
 2. Mit Minikube laden:  
    ```bash
@@ -166,8 +144,7 @@ ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
    kubectl get pods
    ```
 ---
-### ❓ Problem: Pods laufen, Code-Änderung wird aber nicht übernommen  
-✅ Lösung:  
+### Problem: Pods laufen, Code-Änderung wird aber nicht übernommen  
 1. Neues Docker-Image bauen.  
 2. Altes Image in Minikube löschen:  
    ```bash
@@ -185,7 +162,7 @@ ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
    helm install <releasename> <path-to-charts>
    ```
 ---
-### ❓ Problem: Ingress erreichbar, aber kein Zugriff von Host  
+### Problem: Ingress erreichbar, aber kein Zugriff von Host  
 - Minikube-Tunnel starten:  
   ```bash
   minikube tunnel
@@ -196,11 +173,11 @@ ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
     127.0.0.1 chart-example.com
     127.0.0.1 chart-monitoring.com
     127.0.0.1 chart-grafana.com
+
 ```
 
 ---
-### ❓ Problem: Kubernetes erkennt `:latest` nicht  
-✅ Lösung:  
+### Problem: Kubernetes erkennt `:latest` nicht  
 ```bash
 kubectl rollout restart deployment test-frontend
 ```
