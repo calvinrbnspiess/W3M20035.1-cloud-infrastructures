@@ -1,7 +1,8 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: pizza-backend-hpa
+  name: pizza-hpa
+  namespace: default
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -10,11 +11,21 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
+    # 1. unused_capacity
     - type: External
       external:
         metric:
-          name: active_pizzas   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
+          name: unused_capacity
         target:
           type: Value
-          value: "2"          # Schwellwert: ab 2 Bestellungen -> skaliere hoch (Also sind mehr als 2 Pizzen in der Queue sollte ein neuer Pod gestartet werden)
+          value: "0"
+
+    # 2. queue_length
+    - type: External
+      external:
+        metric:
+          name: queue_length
+        target:
+          type: AverageValue
+          value: "1"
 

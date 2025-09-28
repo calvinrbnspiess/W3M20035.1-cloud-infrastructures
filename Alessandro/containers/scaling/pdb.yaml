@@ -1,9 +1,0 @@
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: pizza-backend-pdb
-spec:
-  minAvailable: 1   # es sollte immer min ein Ofen laufen
-  selector:
-    matchLabels:
-      app: pizza-backend
