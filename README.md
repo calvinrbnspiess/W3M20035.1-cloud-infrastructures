@@ -150,7 +150,7 @@ New -> Import
 Custom Dashboard  
 containers/monitoring/Grafana_Dashboard_Pizza_Details.json  
 
-From Web
+From Web  
 [https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)  
 [https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)  
 
