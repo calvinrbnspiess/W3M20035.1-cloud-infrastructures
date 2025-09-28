@@ -158,19 +158,19 @@ Dashboards -> New -> Import
 Import the custom Dashboard:  
 containers/monitoring/Grafana_Dashboard_Pizza_Details.json  
 
-From Web  
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)  
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)  
+Import via dashboard JSON model (copy&paste):  
+[https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)  
+[https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)  
 
 
 ---
 ## Troubleshooting  
-Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgetertenen Befehlen auf unterscheidlichen Platformen
+Im Folgendnen gibt es eine Sammlung von Lösungen bei unterschiedlichen aufgetretenen Befehlen auf unterschiedlichen Plattformen
 ### Problem: `ImagePullBackOff` in `kubectl get pods`  
 1. Docker Images lokal bauen (siehe oben).  
 2. Mit Minikube laden:  
    ```bash
-   minikube image load <image-name>:<tag>
+   minikube image load <image-name>
    ```  
 3. Überprüfen:  
    ```bash
@@ -200,7 +200,7 @@ Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgeterte
   ```bash
   minikube tunnel
   ```
-  Danach ist sind die Pods unter **127.0.0.1** erreichbar. Die Hosts-Datei muss wie folgt angepasst werden:
+  Danach sind die Pods unter **127.0.0.1** erreichbar. Die Hosts-Datei muss wie folgt angepasst werden:
 
 ```
     127.0.0.1 chart-example.com
