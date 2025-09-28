@@ -1,13 +1,22 @@
 rules:
   default: false
   custom:
-    - seriesQuery: 'pizza_pod_active_pizzas' #Variable vom Backend - TODO!!!
+    - seriesQuery: 'unused_capacity'
       resources:
         overrides:
-          namespace: {resource: "namespace"}
-          pod: {resource: "pod"}
+          namespace: { resource: "namespace" }
+          pod: { resource: "pod" }
       name:
-        matches: "pizza_pod_active_pizzas"
-        as: "active_pizzas"
-      metricsQuery: 'sum(pizza_pod_active_pizzas{<<.LabelMatchers>>})'
+        matches: "unused_capacity"
+        as: "unused_capacity"
+      metricsQuery: 'sum(unused_capacity{<<.LabelMatchers>>})'
 
+    - seriesQuery: 'queue_length'
+      resources:
+        overrides:
+          namespace: { resource: "namespace" }
+          pod: { resource: "pod" }
+      name:
+        matches: "queue_length"
+        as: "queue_length"
+      metricsQuery: 'sum(queue_length{<<.LabelMatchers>>})'
