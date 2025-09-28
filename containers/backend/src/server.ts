@@ -31,6 +31,7 @@ async function updateOvensFromPods() {
         pods = res.items;
     } catch (err) {
         console.error("Error occurred whilst getting pods from k8s:", err);
+        return;
     }
 
     const updatedPods: PodInfo[] = [];
@@ -39,6 +40,15 @@ async function updateOvensFromPods() {
         console.log("IP: ", pod.status?.podIP);
 
         console.log(JSON.stringify(pod));
+        
+        let data;
+
+        try {
+            data = await fetch(`http://${pod.status?.podIP}:8080/PizzaOven/status`).then(res => res.json());
+        } catch(error) {
+            console.log(`Error: Oven '${pod.status?.podIP}' is unresponsive, skipping.`);
+            continue;
+        }
 
         const data = await fetch(`http://${pod.status?.podIP}:8080/PizzaOven/status`).then(res => res.json());
         
