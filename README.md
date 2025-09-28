@@ -138,7 +138,7 @@ kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | For
 Open Grafana: [chart-grafana.com](http://chart-grafana.com):
 
 - Username: admin
-- Passwort return from ```<kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>```
+- Passwort: return from ```<kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>```
 
 Add Data Source:
 - Connections -> Data Source -> Add new Data Source -> Prometheus  
