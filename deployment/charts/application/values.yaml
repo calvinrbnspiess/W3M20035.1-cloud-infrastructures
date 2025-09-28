@@ -10,7 +10,7 @@ prometheus-adapter:
         name:
           matches: "queue_length"
           as: "queue_length"
-        metricsQuery: 'queue_length{<<.LabelMatchers>>} + 1'
+        metricsQuery: '(queue_length{<<.LabelMatchers>>} + 1) / 3'
 
   prometheus:
     url: http://test-prometheus-server.default.svc.cluster.local
