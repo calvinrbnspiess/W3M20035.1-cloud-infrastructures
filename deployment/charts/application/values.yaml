@@ -1,5 +1,22 @@
 backend:
   environment_variable_example: test
+prometheus-adapter:
+  rules:
+    external:
+      - seriesQuery: 'queue_length{job="kubernetes-pods"}'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+        name:
+          matches: "queue_length"
+          as: "queue_length"
+        metricsQuery: 'avg(queue_length{<<.LabelMatchers>>})'
+
+  prometheus:
+    url: http://test-prometheus-server.default.svc.cluster.local
+    port: 80
+
+
 prometheus:
   server:
     ingress:
@@ -325,9 +342,20 @@ prometheus:
             - __meta_kubernetes_pod_node_name
             target_label: node
         - job_name: 'test-backend'
-          static_configs:
-            - targets:
-              - test-backend:1234
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              target_label: __metrics_path__
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+              target_label: __address__
+            - source_labels: [__meta_kubernetes_namespace]
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              target_label: pod
 grafana:
   ingress:
     enabled: true

@@ -106,13 +106,13 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 10
   external: 
-    - type: External
-      external:
+    - type: Pods
+      pods:
         metric:
-          name: active_pizzas   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
+          name: queue_length   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
         target:
-          type: Value
-          value: "2"          # Schwellwert: ab 2 Bestellungen -> skaliere hoch (Also sind mehr als 2 Pizzen in der Queue sollte ein neuer Pod gestartet werden)
+          type: AverageValue
+          averageValue: 2       # Schwellwert: ab 2 Bestellungen -> skaliere hoch (Also sind mehr als 2 Pizzen in der Queue sollte ein neuer Pod gestartet werden)
 
 
   #targetCPUUtilizationPercentage: 80

@@ -29,16 +29,13 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
-    {{- if .Values.autoscaling.external }}
-    {{- range .Values.autoscaling.external }}
-    - type: {{ .type }}
+    - type: External
       external:
         metric:
-          name: {{ .external.metric.name }}
+          name: queue_length   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
         target:
-          type: {{ .external.target.type }}
-          value: {{ .external.target.value }}
-    {{- end }}
-    {{- end }}
+          type: Value
+          averageValue: 2  
+
 
 {{- end }}
