@@ -35,7 +35,7 @@ spec:
           name: queue_length   # unser Mapping aus dem Adapter (kommt aus Prometheus Adapter?)
         target:
           type: Value
-          averageValue: 2  
+          value: 2  
 
 
 {{- end }}
