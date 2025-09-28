@@ -18,13 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
   "panels": [
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "bezf8iegy0c8wc"
+        "uid": "eezg8csf99ptse"
       },
       "fieldConfig": {
         "defaults": {
@@ -82,7 +82,8 @@
           "expr": "sum(kube_pod_container_info)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "Pizzen gesamt",
+          "interval": "",
+          "legendFormat": "Ofenstarts gesamt",
           "range": true,
           "refId": "Anzahl_Pizzen",
           "useBackend": false
@@ -103,23 +104,6 @@
           "range": true,
           "refId": "Anzahl_Öfen",
           "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "bezf8iegy0c8wc"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "sum(workqueue_depth)",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Pizzen in Warteschlange",
-          "range": true,
-          "refId": "Anzahl_Pizzen_Queue",
-          "useBackend": false
         }
       ],
       "title": "Gesamtübersicht",
@@ -133,12 +117,12 @@
     "list": []
   },
   "time": {
-    "from": "2025-09-28T02:11:54.038Z",
-    "to": "2025-09-28T14:11:54.038Z"
+    "from": "now-5m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Monitoring",
+  "title": "Monitoring1",
   "uid": "b43e4206-2057-47c8-b7bc-95041f1a9a71",
-  "version": 16
+  "version": 6
 }
