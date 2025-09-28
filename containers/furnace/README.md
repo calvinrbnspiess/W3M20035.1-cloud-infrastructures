@@ -1,11 +1,12 @@
 ### An oven gets the following upon creation:  
-- A Guid
-- A capacity of 3
+- State of 'Running'
+- Guid
+- Capacity of 3
 
 ### Endpoints
 
 /status  
-Returns the oven ID, capacity, current load and the pizza status for every pizza.
+Returns the state, oven ID, capacity, current load and the pizza status for every pizza.
 
 /add  
 Adds a new pizza to the oven.  
@@ -14,6 +15,9 @@ Takes an optional description of the pizza.
 /remove/{id}  
 Removes a pizza from the oven.  
 Needs the id of the pizza to remove.  
+
+/shutdown  
+Sets the oven state from 'Running' to 'Shutdown'
 
 ### Healthchecks
 
