@@ -32,7 +32,7 @@ Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann 
 ## Getting Started  
 
 Vorgehen um eine laufende Installation im OpenStackCluster zu erhalten:
-Erstellen der VM mit Teraform, Datei mit den entsprechenden Rechten anpassen. 
+Erstellen der VM mit Terraform, Datei mit den entsprechenden Rechten anpassen. 
 ```bash
 cd deployment
 terraform apply
