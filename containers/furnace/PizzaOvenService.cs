@@ -7,6 +7,7 @@ public class PizzaOvenService
     private readonly SemaphoreSlim _semaphore;
     public Guid Id;
     public readonly int Capacity;
+    public string State;
 
     private readonly ConcurrentDictionary<PizzaEntity, (int Progress, CancellationTokenSource Cts)> _bakingPizzas =
         new();
@@ -15,6 +16,7 @@ public class PizzaOvenService
 
     public PizzaOvenService()
     {
+        State = "Running";
         Capacity = 3;
         _semaphore = new SemaphoreSlim(3, 3);
         Id = Guid.NewGuid();
@@ -78,5 +80,10 @@ public class PizzaOvenService
             _bakingPizzas.TryRemove(pizza, out _);
             _semaphore.Release();
         }
+    }
+
+    public void SetShutdownState()
+    {
+        State = "Shutdown";
     }
 }

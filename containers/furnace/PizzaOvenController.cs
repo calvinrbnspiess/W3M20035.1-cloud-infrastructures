@@ -11,6 +11,7 @@ public class PizzaOvenController(PizzaOvenService oven) : ControllerBase
     {
         var status = new
         {
+            oven.State,
             OvenId = oven.Id,
             oven.Capacity,
             CurrentLoad = oven.GetLoad(),
@@ -43,6 +44,13 @@ public class PizzaOvenController(PizzaOvenService oven) : ControllerBase
         }
 
         return Ok("Pizza with id " + id + " has been removed.");
+    }
+    
+    [HttpPost("shutdown")]
+    public Task<IActionResult> SetShutdownState()
+    {
+        oven.SetShutdownState();
+        return Task.FromResult<IActionResult>(Ok("Oven state set to 'Shutdown'"));
     }
 }
 
