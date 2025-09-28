@@ -2,6 +2,7 @@
     ovenId: string;
     capacity: number;
     currentLoad: number;
+    status: "Running" | "Shutdown";
     pizzas: BackendPizza[];
 }
 
@@ -19,6 +20,7 @@ export type Oven = {
     currentLoad: number;
     pizzas: Pizza[];
     isRunning: boolean;
+    status: "Running" | "Shutdown";
 }
 
 export type Pizza = {

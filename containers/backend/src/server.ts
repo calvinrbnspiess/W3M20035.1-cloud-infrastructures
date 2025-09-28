@@ -49,8 +49,6 @@ async function updateOvensFromPods() {
             console.log(`Error: Oven '${pod.status?.podIP}' is unresponsive, skipping.`);
             continue;
         }
-
-        const data = await fetch(`http://${pod.status?.podIP}:8080/PizzaOven/status`).then(res => res.json());
         
         const { ovenId, pizzas, ...otherProperties } = data as BackendOven;
         console.log("received data from oven", data);
@@ -173,7 +171,7 @@ async function processQueue() {
     }
 
     // Detect when all ovens are full and call a function
-    const allOvensFull = state.ovens.length > 0 && state.ovens.every(oven => oven.pizzas.length >= oven.capacity);
+    const allOvensFull = state.ovens.length > 0 && state.ovens.every(oven => oven.pizzas.length >= oven.capacity || oven.status === "Shutdown");
 
     if (allOvensFull) {
         console.log("All ovens are full!");
@@ -182,6 +180,12 @@ async function processQueue() {
     
     for (const oven of state.ovens) {
         let availableSlots = oven.capacity - oven.pizzas.length;
+
+        if(oven.status === "Shutdown") {
+            console.log(`Oven ${oven.id} is already shutting down, availableSlots = 0, currently ${oven.pizzas.length}/${oven.capacity} pizzas`);
+            availableSlots = 0;
+        }
+
         if (availableSlots <= 0) continue;
       
         let queueIndex = 0;
