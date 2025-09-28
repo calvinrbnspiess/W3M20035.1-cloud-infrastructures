@@ -1,3 +1,10 @@
+Teilnehmer:  
+Friedrich Roth  
+Calvin Reibenspieß  
+Alessandro Ullmer  
+Raphael Ullmer  
+Nico Wolff  
+
 # 🍕 W3M20035.1 Cloud Infrastructures  
 **Use Case:** Skalierbares Pizza-Backen in der Cloud
 
