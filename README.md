@@ -90,8 +90,7 @@ minikube -p minikube docker-env --shell powershell | Invoke-Expression
 #### Docker Images bauen  
 ```bash
 # Frontend
-docker build -f containers/frontend/Dockerfile --tag frontend:latest \
-  --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws .
+docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws .
 
 # Backend
 docker build -f containers/backend/Dockerfile --tag backend:latest .
