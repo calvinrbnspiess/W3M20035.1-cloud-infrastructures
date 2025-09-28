@@ -162,13 +162,9 @@ Add Data Source:
 Add Dashboards:
 Dashboards -> New -> Import  
 
-Import the custom Dashboard:  
-containers/monitoring/Grafana_Dashboard_Pizza_Details.json  
-
-Import via dashboard JSON model (copy&paste):  
-[https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)  
-[https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)  
-
+Import the Dashboards:  
+containers/monitoring/Grafana_Dashboard_Pizza_Details.json (Eigen gebautes Dashboard)
+containers/monitoring/k8s-views-nodes.json (Quelle: [https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json))  
 
 ---
 ## Troubleshooting  
