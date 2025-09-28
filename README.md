@@ -1,142 +1,207 @@
-# W3M20035.1-cloud-infrastructures
- Use Case: Skalierbares Pizza backen mit UI für Metriken
- Beispiel: Knopf für Pizzaorder wird gedrückt -> Pizzaofen erscheint im UI und backt Pizza 
-(max. Kapazität x Pizzen und Dauer von den Pizzen y min zu Demonstrationszwecken)
- 
-Technologie: 
-- UI (Next.js/React)
-- Backend (Typescript/Node.js)
-- Oven (C#)
-- Minikube/K8s etc.
-- Prometheus (Dashboard)
-- Ansible (Provisioning und Setup)
-- Grafana (Dashboard für Metriken)
-- Helm (Kubernetes Deployment)
+# 🍕 W3M20035.1 Cloud Infrastructures  
+**Use Case:** Skalierbares Pizza-Backen in der Cloud
 
-# Getting started
-- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+Entwickelt wurde eine Web-Applikation mit Frontend und Backend. Ergänzend dazu gibt es Pizzaöfen als separate Pods, die in der Infrastruktur dynamisch hoch- und herunterskaliert werden.
 
-`minikube start`  
-`minikube addons enable ingress`  
-`kubectl get pods -A` (to verify that everything is running)  
-`kubectl get svc -n ingress-nginx`  
+Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann gleichzeitig bis zu 3 Pizzen backen. Eine Pizza wird 90 Sekunden gebacken. Alle 5 Sekunden wird die Warteschlange überprüft und weiter abgearbeitet. Abhängig von der Länge der Warteschlange werden automatisch neue Öfen gestartet oder wieder entfernt.
 
-# Build in minikube context:
+---
 
-macOS / linux: ```eval $(minikube docker-env)```  
-windows: ```@FOR /f "tokens=*" %i IN ('minikube -p minikube docker-env --shell cmd') DO @%i``` or ``` minikube -p minikube docker-env --shell powershell | Invoke-Expression``` 
+## 📑 Inhaltsverzeichnis
+- [⚙️ Technologien](#️-technologien)
+- [🚀 Getting Started](#-getting-started)
+- [🐳 Docker Build](#-docker-build)
+- [⎈ Helm Commands](#-helm-commands)
+- [🛠 Troubleshooting](#-troubleshooting)
+- [🌐 Zugriff auf die Anwendung](#-zugriff-auf-die-anwendung)
+- [🏗 Projekt Deployment (Cloud)](#-projekt-deployment-cloud)
+- [📊 Monitoring Setup](#-monitoring-setup)
 
-## Docker commands
-Frontend: `docker build -f containers/frontend/Dockerfile --tag frontend:latest --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws .`  
-Backend: `docker build -f containers/backend/Dockerfile --tag backend:latest .`  
-Oven: `docker build -f containers/furnace/Dockerfile --tag oven:latest .`
+---
 
-## Helm commands
+## ⚙️ Technologien  
+- **UI:** Next.js / React  
+- **Backend:** TypeScript / Node.js  
+- **Ofen:** C#  
+- **Orchestrierung:** Minikube / Kubernetes / Helm  
+- **Monitoring:** Prometheus & Grafana  
+- **Provisionierung:** Ansible  
+- **Deployment:** Helm  
 
-`helm dependency build deployment/charts/application/`  
-`helm dependency build <path-to-charts>`  
+---
 
-`helm install test deployment/charts/application/`  
-`helm install <releasename> <path-to-charts>`
- 
-`helm dependency update deployment/charts/application/`  
-`helm upgrade test deployment/charts/application/`  
+## 🚀 Getting Started  
 
-`helm uninstall test`  
-`helm uninstall <releasename>`  
+### Voraussetzungen  
+- [Minikube installieren](https://minikube.sigs.k8s.io/docs/start/)  
+- [kubectl installieren](https://kubernetes.io/docs/tasks/tools/)  
 
-`kubectl get pods` (um laufende Pods zu bekommen)  
-`kubectl logs <podname>` (Logs des Pods/Container))  
-
-To access the frontend (not needed if ingress is working correctly):  
-`kubectl port-forward svc/test-frontend 3000:3000`  
-
-## Troubleshooting:
-
-Q: I have a ImagePullBackOff error when reading  `kubectl get pods`  
-A:  
-- Build all docker images that can not be found (`docker build -t <name-of-image-as-in-helm-values.yaml>:<tag-as-in-helm-values.yaml>` in the correct folder) -> see Docker commands
-- `minikube image load <name-of-built-image>:<tag-of-built-image>` for each image
-- Verify that the error is gone with `kubectl get pods`
-
-Q: How do I update my pods to the latest code change? TODO: test again and if working remove this todo  
-A:  
-- Build the docker image
-- Remove the old docker image from minikube (`minikube ssh` - `docker rmi <image-name>` - `exit`)
-- `minikube image load <name-of-built-image>:<tag-of-built-image>` for the updated image
-- `helm uninstall <releasename>`
-- `helm install <releasename> <path-to-charts>`
-- Verify that the error is gone with `kubectl get pods` and `kubectl logs <podname>`
-
-Q: I can't access pods from hosts although ingress is running.
-A:  
-The command `kubectl get svc -n ingress-nginx` should show LoadBalancer for ingress and an external ip.
-```
-NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
-ingress-nginx-controller             LoadBalancer   10.102.26.215    127.0.0.1     80:30225/TCP,443:30293/TCP   4h31m
-ingress-nginx-controller-admission   ClusterIP      10.100.180.199   <none>        443/TCP                      4h31m
+### Minikube starten  
+```bash
+minikube start
+minikube addons enable ingress
+kubectl get pods -A        # Überprüfung ob alles läuft
+kubectl get svc -n ingress-nginx
 ```
 
-Otherwise run: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "LoadBalancer"}}'` (linux/macos)  
-on windows: `kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{\"spec\": {\"type\": \"LoadBalancer\"}}'`  
+---
 
-Please run `update-hosts.sh` (macos/linux) to update your hosts file based on the ingress ip.
+## 🐳 Docker Build  
 
-Now, you need to run `minikube tunnel` to reach the application on 'chart-example.com'.
+### Build im Minikube-Context aktivieren  
+**macOS / Linux:**  
+```bash
+eval $(minikube docker-env)
+```
 
-Q: Restart after updating the image
-A:  
-Restart Pods if needed
+**Windows:**  
+```cmd
+@FOR /f "tokens=*" %i IN ('minikube -p minikube docker-env --shell cmd') DO @%i
+```
+oder  
+```powershell
+minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
 
-Sometimes Kubernetes won’t notice :latest changed (because the tag is the same). To force reload:
+### Docker Images bauen  
+```bash
+# Frontend
+docker build -f containers/frontend/Dockerfile --tag frontend:latest \
+  --build-arg NEXT_PUBLIC_WS_URL=ws://chart-example.com/ws .
 
-```kubectl rollout restart deployment test-frontend```
+# Backend
+docker build -f containers/backend/Dockerfile --tag backend:latest .
 
-This deletes old pods and pulls your updated frontend:latest.
+# Ofen
+docker build -f containers/furnace/Dockerfile --tag oven:latest .
+```
 
-# Application erreichen:
-Anpassen der etc/host datei:  
-Ort Windows: ```%windir%\system32\drivers\etc```  
-Hinzufügen des eintrages chart-example.com zur  minikube ip:  192.168.49.2 chart-example.com  
+---
 
-Anpassen der eigenen etc/hostdatei mit ```127.0.0.1 chart-example.com```  
-Aufmachen eines SSH Tunnels für chart-example.com zur vm z.B mit VSCode SSH extension  
+## ⎈ Helm Commands  
 
-# Aufsetzen des Projektektes
+```bash
+# Dependencies
+helm dependency build deployment/charts/application/
+helm dependency build <path-to-charts>
 
+# Installation
+helm install test deployment/charts/application/
+helm install <releasename> <path-to-charts>
+
+# Updates
+helm dependency update deployment/charts/application/
+helm upgrade test deployment/charts/application/
+
+# Deinstallation
+helm uninstall test
+helm uninstall <releasename>
+```
+
+**Debugging & Logs**  
+```bash
+kubectl get pods            # Laufende Pods
+kubectl logs <podname>      # Logs anzeigen
+kubectl port-forward svc/test-frontend 3000:3000   # Falls Ingress nicht greift
+```
+
+---
+# 🛠 Troubleshooting  
+## ❓ Problem: `ImagePullBackOff` in `kubectl get pods`  
+✅ Lösung:  
+1. Docker Images lokal bauen (siehe oben).  
+2. Mit Minikube laden:  
+   ```bash
+   minikube image load <image-name>:<tag>
+   ```  
+3. Überprüfen:  
+   ```bash
+   kubectl get pods
+   ```
+---
+## ❓ Problem: Pods laufen, Code-Änderung wird aber nicht übernommen  
+✅ Lösung:  
+1. Neues Docker-Image bauen.  
+2. Altes Image in Minikube löschen:  
+   ```bash
+   minikube ssh
+   docker rmi <image-name>
+   exit
+   ```
+3. Neues Image laden:  
+   ```bash
+   minikube image load <image-name>:<tag>
+   ```
+4. Helm Release neu installieren:  
+   ```bash
+   helm uninstall <releasename>
+   helm install <releasename> <path-to-charts>
+   ```
+---
+## ❓ Problem: Ingress erreichbar, aber kein Zugriff von Host  
+- Minikube-Tunnel starten:  
+  ```bash
+  minikube tunnel
+  ```
+  Danach ist sind die Pods unter **127.0.0.1** erreichbar. Die Hosts-Datei muss wie folgt angepasst werden:
+
+```
+    127.0.0.1 chart-example.com
+    127.0.0.1 chart-monitoring.com
+    127.0.0.1 chart-grafana.com
+```
+
+---
+## ❓ Problem: Kubernetes erkennt `:latest` nicht  
+✅ Lösung:  
+```bash
+kubectl rollout restart deployment test-frontend
+```
+---
+# 🌐 Zugriff auf die Anwendung  
+## Hosts-Datei anpassen  
+**Windows:**  
+`%windir%\system32\drivers\etc\hosts`  
+**Linux/macOS:**  
+`/etc/hosts`  
+Beispiel:  
+```
+192.168.49.2 chart-example.com
+127.0.0.1    chart-example.com
+```
+---
+# 🏗 Projekt Deployment (Cloud)  
+```bash
 cd deployment
-
-TODO Teraform aufstzen
 terraform apply
-
-running ansible scripsts expeckted that vm is in knownhost file (connect once manualy via ssh)
-ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_private_key>" -v
-ansible-playbook -i openstack-inventory.txt ansible/minikubehelm.yaml -key-file "<path_to_private_key>" -v
-ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key-file "<path_to_private_key>" -v
-ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_private_key>" -v
-
-modify the /etc/host file:
+```
+**Ansible Playbooks:**  
+```bash
+ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/minikubehelm.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key-file "<path_to_key>"
+ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_key>"
+```
+**Hosts anpassen:**  
+```
 127.0.0.1 chart-example.com
 127.0.0.1 chart-monitoring.com
 127.0.0.1 chart-grafana.com
-
-ssh ubuntu@<ip> -i ~/.ssh/cloudnative  -L 443:192.168.49.2:443      
-ssh ubuntu@<ip> -i ~/.ssh/cloudnative  -L 80:192.168.49.2:80      
-
-Falls ein deployment local gewünscht ist bitte minikube instalieren und folgende addons enablen:
-
-minikube addons enable ingress
-minikube addons enable metrics-server
-
-Außerdem bitte in der /etc/host datei auf die minikube ip umstellen (testet für manjaro linux)
-
-helm instalation :
-
-cd ..
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
+```
+**SSH Tunnel:**  
+```bash
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
+```
+---
+# 📊 Monitoring Setup  
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm dependency build deployment/charts/application/
 helm install test deployment/charts/application/
-
-nach einer startphase sollten nun die die aplikation unter chart-example.com das monitoring (promethues) unter chart-monitoring.com und grafana und  chart-grafana.com  erreichbar sein. 
+```
+Nach einer Startphase erreichbar unter:  
+- 🍕 **Applikation:** [chart-example.com](http://chart-example.com)  
+- 📈 **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
+- 📊 **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
