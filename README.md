@@ -133,6 +133,7 @@ Außerdem bitte in der /etc/host datei auf die minikube ip umstellen (testet fü
 
 helm instalation :
 
+cd ..
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm dependency build deployment/charts/application/
