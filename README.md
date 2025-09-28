@@ -102,3 +102,23 @@ Hinzufügen des eintrages chart-example.com zur  minikube ip:  192.168.49.2 char
 
 Anpassen der eigenen etc/hostdatei mit ```127.0.0.1 chart-example.com```  
 Aufmachen eines SSH Tunnels für chart-example.com zur vm z.B mit VSCode SSH extension  
+
+# Aufsetzen des Projektektes
+
+cd deployment
+
+TODO Teraform aufstzen
+terraform apply
+
+running ansible scripsts expeckted that vm is in knownhost file (connect once manualy via ssh)
+ansible-playbook -i openstack-inventory.txt ansible/installdocker.yaml -key-file "<path_to_private_key>" -v
+ansible-playbook -i openstack-inventory.txt ansible/minikubehelm.yaml -key-file "<path_to_private_key>" -v
+ansible-playbook -i openstack-inventory.txt ansible/clonaandbuildimage.yaml -key-file "<path_to_private_key>" -v
+ansible-playbook -i openstack-inventory.txt ansible/buildandinstallhelm.yaml -key-file "<path_to_private_key>" -v
+
+modify the /etc/host file:
+127.0.0.1 chart-example.com
+127.0.0.1 chart-monitoring.com
+127.0.0.1 chart-grafana.com
+
+TODO open ssh tunnels ass needed 
