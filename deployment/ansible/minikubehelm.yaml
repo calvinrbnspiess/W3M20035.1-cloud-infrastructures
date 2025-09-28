@@ -43,10 +43,19 @@
     ansible.builtin.command: minikube addons enable ingress --profile=minikube
     when: "'minikube' in profile_list.stdout"
     register: ingress_result
-
+  
+  - name: Enable metrics-server add-on if profile exists
+    ansible.builtin.command: minikube addons enable metrics-server --profile=minikube
+    when: "'minikube' in profile_list.stdout"
+    register: metrics_server
+  
   - name: Show result
     ansible.builtin.debug:
       var: ingress_result.stdout
+
+  - name: Show result
+    ansible.builtin.debug:
+      var: metrics_server.stdout
 
 - name: Install Helm on Debian/Ubuntu
   hosts: all

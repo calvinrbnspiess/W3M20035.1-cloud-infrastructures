@@ -121,4 +121,21 @@ modify the /etc/host file:
 127.0.0.1 chart-monitoring.com
 127.0.0.1 chart-grafana.com
 
-TODO open ssh tunnels ass needed 
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative  -L 443:192.168.49.2:443      
+ssh ubuntu@<ip> -i ~/.ssh/cloudnative  -L 80:192.168.49.2:80      
+
+Falls ein deployment local gewünscht ist bitte minikube instalieren und folgende addons enablen:
+
+minikube addons enable ingress
+minikube addons enable metrics-server
+
+Außerdem bitte in der /etc/host datei auf die minikube ip umstellen (testet für manjaro linux)
+
+helm instalation :
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
+helm repo add grafana https://grafana.github.io/helm-charts
+helm dependency build deployment/charts/application/
+helm install test deployment/charts/application/
+
+nach einer startphase sollten nun die die aplikation unter chart-example.com das monitoring (promethues) unter chart-monitoring.com und grafana und  chart-grafana.com  erreichbar sein. 
