@@ -12,11 +12,10 @@ Im Frontend können Pizzen in eine Warteschlange gelegt werden. Jeder Ofen kann 
 - [🚀 Getting Started](#-getting-started)
 - [🐳 Docker Build](#-docker-build)
 - [⎈ Helm Commands](#-helm-commands)
-- [🛠 Troubleshooting](#-troubleshooting)
+- [📊 Monitoring Setup](#-monitoring-setup)
 - [🌐 Zugriff auf die Anwendung](#-zugriff-auf-die-anwendung)
 - [🏗 Projekt Deployment (Cloud)](#-projekt-deployment-cloud)
-- [📊 Monitoring Setup](#-monitoring-setup)
-
+- [🛠 Troubleshooting](#-troubleshooting)
 ---
 
 ## ⚙️ Technologien  
@@ -43,6 +42,11 @@ minikube addons enable ingress
 kubectl get pods -A        # Überprüfung ob alles läuft
 kubectl get svc -n ingress-nginx
 ```
+
+Nach einer Startphase erreichbar unter:  
+- 🍕 **Applikation:** [chart-example.com](http://chart-example.com)  
+- 📈 **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
+- 📊 **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
 
 ---
 
@@ -104,62 +108,17 @@ kubectl get pods            # Laufende Pods
 kubectl logs <podname>      # Logs anzeigen
 kubectl port-forward svc/test-frontend 3000:3000   # Falls Ingress nicht greift
 ```
-
 ---
-# 🛠 Troubleshooting  
-## ❓ Problem: `ImagePullBackOff` in `kubectl get pods`  
-✅ Lösung:  
-1. Docker Images lokal bauen (siehe oben).  
-2. Mit Minikube laden:  
-   ```bash
-   minikube image load <image-name>:<tag>
-   ```  
-3. Überprüfen:  
-   ```bash
-   kubectl get pods
-   ```
----
-## ❓ Problem: Pods laufen, Code-Änderung wird aber nicht übernommen  
-✅ Lösung:  
-1. Neues Docker-Image bauen.  
-2. Altes Image in Minikube löschen:  
-   ```bash
-   minikube ssh
-   docker rmi <image-name>
-   exit
-   ```
-3. Neues Image laden:  
-   ```bash
-   minikube image load <image-name>:<tag>
-   ```
-4. Helm Release neu installieren:  
-   ```bash
-   helm uninstall <releasename>
-   helm install <releasename> <path-to-charts>
-   ```
----
-## ❓ Problem: Ingress erreichbar, aber kein Zugriff von Host  
-- Minikube-Tunnel starten:  
-  ```bash
-  minikube tunnel
-  ```
-  Danach ist sind die Pods unter **127.0.0.1** erreichbar. Die Hosts-Datei muss wie folgt angepasst werden:
-
-```
-    127.0.0.1 chart-example.com
-    127.0.0.1 chart-monitoring.com
-    127.0.0.1 chart-grafana.com
-```
-
----
-## ❓ Problem: Kubernetes erkennt `:latest` nicht  
-✅ Lösung:  
+## 📊 Monitoring Setup  
 ```bash
-kubectl rollout restart deployment test-frontend
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm dependency build deployment/charts/application/
+helm install test deployment/charts/application/
 ```
 ---
-# 🌐 Zugriff auf die Anwendung  
-## Hosts-Datei anpassen  
+## 🌐 Zugriff auf die Anwendung  
+### Hosts-Datei anpassen  
 **Windows:**  
 `%windir%\system32\drivers\etc\hosts`  
 **Linux/macOS:**  
@@ -170,7 +129,7 @@ Beispiel:
 127.0.0.1    chart-example.com
 ```
 ---
-# 🏗 Projekt Deployment (Cloud)  
+## 🏗 Projekt Deployment (Cloud)  
 ```bash
 cd deployment
 terraform apply
@@ -194,14 +153,54 @@ ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
 ```
 ---
-# 📊 Monitoring Setup  
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add grafana https://grafana.github.io/helm-charts
-helm dependency build deployment/charts/application/
-helm install test deployment/charts/application/
+## 🛠 Troubleshooting  
+### ❓ Problem: `ImagePullBackOff` in `kubectl get pods`  
+✅ Lösung:  
+1. Docker Images lokal bauen (siehe oben).  
+2. Mit Minikube laden:  
+   ```bash
+   minikube image load <image-name>:<tag>
+   ```  
+3. Überprüfen:  
+   ```bash
+   kubectl get pods
+   ```
+---
+### ❓ Problem: Pods laufen, Code-Änderung wird aber nicht übernommen  
+✅ Lösung:  
+1. Neues Docker-Image bauen.  
+2. Altes Image in Minikube löschen:  
+   ```bash
+   minikube ssh
+   docker rmi <image-name>
+   exit
+   ```
+3. Neues Image laden:  
+   ```bash
+   minikube image load <image-name>:<tag>
+   ```
+4. Helm Release neu installieren:  
+   ```bash
+   helm uninstall <releasename>
+   helm install <releasename> <path-to-charts>
+   ```
+---
+### ❓ Problem: Ingress erreichbar, aber kein Zugriff von Host  
+- Minikube-Tunnel starten:  
+  ```bash
+  minikube tunnel
+  ```
+  Danach ist sind die Pods unter **127.0.0.1** erreichbar. Die Hosts-Datei muss wie folgt angepasst werden:
+
 ```
-Nach einer Startphase erreichbar unter:  
-- 🍕 **Applikation:** [chart-example.com](http://chart-example.com)  
-- 📈 **Prometheus:** [chart-monitoring.com](http://chart-monitoring.com)  
-- 📊 **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
+    127.0.0.1 chart-example.com
+    127.0.0.1 chart-monitoring.com
+    127.0.0.1 chart-grafana.com
+```
+
+---
+### ❓ Problem: Kubernetes erkennt `:latest` nicht  
+✅ Lösung:  
+```bash
+kubectl rollout restart deployment test-frontend
+```
