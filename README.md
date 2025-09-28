@@ -130,7 +130,7 @@ Nach einer Startphase erreichbar unter:
 -  **Grafana:** [chart-grafana.com](http://chart-grafana.com)  
 
 
-#### Grafana configurieren:
+#### Grafana konfigurieren:
 ```
 kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 ```
@@ -141,18 +141,18 @@ Open Grafana: [chart-grafana.com](http://chart-grafana.com):
 - Passwort return from ```<kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>```
 
 Add Data Source:
-- Connections -> Data Source -> Add new Data Source -> Prometheus
-- Prometheus server URL: http://test-prometheus-server
-- Save & test
+- Connections -> Data Source -> Add new Data Source -> Prometheus  
+- Prometheus server URL: http://test-prometheus-server  
+- Save & test  
 
 Add Dashboards:
-New -> Import
-Custom Dashboard
-containers/monitoring/Grafana_Dashboard_Pizza_Details.json
+New -> Import  
+Custom Dashboard  
+containers/monitoring/Grafana_Dashboard_Pizza_Details.json  
 
 From Web
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)
-[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)
+[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-nodes.json)  
+[https://github.com/dotdc/grafana-dashboards-kubernetes/tree/master/dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/master/dashboards/k8s-views-pods.json)  
 
 
 ---
