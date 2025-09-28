@@ -59,7 +59,7 @@ Anschließend müssen zwei SSH Tunnel für die Applikation geöffnet werden.
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 443:192.168.49.2:443
 ssh ubuntu@<ip> -i ~/.ssh/cloudnative -L 80:192.168.49.2:80
 ```
-Alternativ kann die Applikation natürlich auch lokal in minikube oder einem Cluster laufen. Im Folgenden wird das lokale minikube Setup beschrieben. Getestet wurde diese anleitung auf Linux (Manjaro) & Windows 10  
+Alternativ kann die Applikation natürlich auch lokal in minikube oder einem Cluster laufen. Im Folgenden wird das lokale minikube Setup beschrieben. Getestet wurde diese Anleitung auf Linux (Manjaro)
 ### Voraussetzungen  
 - [Minikube installieren](https://minikube.sigs.k8s.io/docs/start/)  
 - [kubectl installieren](https://kubernetes.io/docs/tasks/tools/)  
@@ -106,7 +106,6 @@ docker build -f containers/furnace/Dockerfile --tag oven:latest .
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
-helm upgrade prometheus prometheus-community/prometheus -f deployment/charts/apllication/values.yaml
 helm dependency build deployment/charts/application/
 helm install test deployment/charts/application/
 ```
@@ -114,7 +113,7 @@ helm install test deployment/charts/application/
 #### Hosts-Datei anpassen
 
 **Windows:**  
-`%windir%\system32\drivers\etc\hosts`  
+`%windir%\system32\drivers\etc\hosts` (statt Minikube IP 127.0.0.1 verwenden und minikube tunnel benutzen)  
 **Linux/macOS:**  
 `/etc/hosts`  
 Beispiel:  
@@ -130,14 +129,23 @@ Nach einer Startphase erreichbar unter:
 
 
 #### Grafana konfigurieren:
+
+Passwort holen:
+
+**Windows:**  
 ```
-kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+kubectl get secret -n default test-grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+```
+
+**Linux/macOS:**  
+```
+kubectl get secret -n default test-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
 ```
 
 Open Grafana: [chart-grafana.com](http://chart-grafana.com):
 
 - Username: admin
-- Passwort: return from ```<kubectl get secret -n default grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }>```
+- Passwort: <siehe oben>
 
 Add Data Source:
 - Connections -> Data Source -> Add new Data Source -> Prometheus  
@@ -145,8 +153,9 @@ Add Data Source:
 - Save & test  
 
 Add Dashboards:
-New -> Import  
-Custom Dashboard  
+Dashboards -> New -> Import  
+
+Import the custom Dashboard:  
 containers/monitoring/Grafana_Dashboard_Pizza_Details.json  
 
 From Web  
@@ -186,7 +195,7 @@ Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgeterte
    helm install <releasename> <path-to-charts>
    ```
 ---
-### Problem: Ingress erreichbar, aber kein Zugriff von Host  
+### Problem: Ingress erreichbar, aber kein Zugriff von Host
 - Minikube-Tunnel starten:  
   ```bash
   minikube tunnel
@@ -197,7 +206,6 @@ Im Folgendnen gibt es eine Löse befahlssamlung bei unterscheidlichen aufgeterte
     127.0.0.1 chart-example.com
     127.0.0.1 chart-monitoring.com
     127.0.0.1 chart-grafana.com
-
 ```
 
 ---
